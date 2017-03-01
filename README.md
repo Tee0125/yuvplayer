@@ -23,10 +23,10 @@ Supporting Feature
 * Store frame to YUV/BMP
 
 Hot key
-* "°Ê": frm-forward
-* "°Á": frm-backward
-* "°Ë": zoom-in
-* "°È": zoom-out
+* "‚Üí": frm-forward
+* "‚Üê": frm-backward
+* "‚Üë": zoom-in
+* "‚Üì": zoom-out
 * "p/space": play/pause toggle
 * "o": open
 * "g": goto a frame
