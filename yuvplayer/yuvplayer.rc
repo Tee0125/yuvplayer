@@ -104,8 +104,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,0
- PRODUCTVERSION 2,3,0,0
+ FILEVERSION 2,4,0,0
+ PRODUCTVERSION 2,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -121,12 +121,12 @@ BEGIN
         BLOCK "080004e4"
         BEGIN
             VALUE "FileDescription", "YUV file viewer"
-            VALUE "FileVersion", "2.3.0.0"
+            VALUE "FileVersion", "2.4.0.0"
             VALUE "InternalName", "yuvplayer.exe"
             VALUE "LegalCopyright", "Copyright Tae-young (c).  All rights reserved."
             VALUE "OriginalFilename", "yuvplayer.exe"
             VALUE "ProductName", "YUVplayer"
-            VALUE "ProductVersion", "2.3.0.0"
+            VALUE "ProductVersion", "2.4.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -142,17 +142,29 @@ END
 //
 
 OPEND                   BITMAP                  "res\\bitmap1.bmp"
+
 OPENU                   BITMAP                  "res\\bitmap2.bmp"
+
 FFORWARDU               BITMAP                  "res\\bitmap3.bmp"
+
 STOPD                   BITMAP                  "res\\bitmap4.bmp"
+
 STOPU                   BITMAP                  "res\\bitmap5.bmp"
+
 PLAYD                   BITMAP                  "res\\bitmap6.bmp"
+
 PLAYU                   BITMAP                  "res\\bitmap7.bmp"
+
 PAUSEU                  BITMAP                  "res\\bitmap8.bmp"
+
 PAUSED                  BITMAP                  "res\\bitmap9.bmp"
+
 FFORWARDD               BITMAP                  "res\\bitmap10.bmp"
+
 REWINDU                 BITMAP                  "res\\bitmap11.bmp"
+
 REWINDD                 BITMAP                  "res\\bitmap12.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -271,6 +283,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
+
 #endif    // 한국어(대한민국) resources
 /////////////////////////////////////////////////////////////////////////////
 
