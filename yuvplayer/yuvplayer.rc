@@ -1,0 +1,298 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 한국어(대한민국) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
+#pragma code_page(949)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)\r\n"
+    "LANGUAGE 18, 1\r\n"
+    "#pragma code_page(949)\r\n"
+    "#include ""res\\yuvplayer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_YUVPLAYER_DIALOG DIALOGEX 0, 0, 320, 200
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "YUVplayer"
+MENU IDR_MAIN_MENU
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "OPEN",IDC_OPEN,"Button",BS_OWNERDRAW | WS_TABSTOP,0,186,23,14
+    CONTROL         "REWIND",IDC_REWIND,"Button",BS_OWNERDRAW | WS_TABSTOP,23,186,23,14
+    CONTROL         "PLAY",IDC_PLAY,"Button",BS_OWNERDRAW | WS_TABSTOP,46,186,23,14
+    CONTROL         "STOP",IDC_STOP,"Button",BS_OWNERDRAW | WS_TABSTOP,69,186,23,14
+    CONTROL         "FFORWARD",IDC_FFORWARD,"Button",BS_OWNERDRAW | WS_TABSTOP,92,186,23,14
+    CONTROL         "",IDC_SLIDER,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,116,186,204,13
+    CONTROL         "",IDC_VIEW,"Static",SS_BLACKFRAME | NOT WS_VISIBLE,0,0,319,184
+END
+
+IDD_CUSTOM_SIZE DIALOGEX 0, 0, 78, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Custom Size"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,14,41,52,14
+    EDITTEXT        IDC_WIDTH,31,4,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_HEIGHT,31,23,40,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Width",IDC_STATIC,8,9,20,9
+    LTEXT           "Height",IDC_STATIC,7,25,22,8
+END
+
+IDD_GO_DIALOG DIALOGEX 0, 0, 119, 26
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | DS_CENTERMOUSE | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "GO",IDOK,87,7,25,12
+    EDITTEXT        IDC_FRAME_NO,41,7,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Frame No",IDC_STATIC,7,8,33,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,3,0,0
+ PRODUCTVERSION 2,3,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080004e4"
+        BEGIN
+            VALUE "FileDescription", "YUV file viewer"
+            VALUE "FileVersion", "2.3.0.0"
+            VALUE "InternalName", "yuvplayer.exe"
+            VALUE "LegalCopyright", "Copyright Tae-young (c).  All rights reserved."
+            VALUE "OriginalFilename", "yuvplayer.exe"
+            VALUE "ProductName", "YUVplayer"
+            VALUE "ProductVersion", "2.3.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x800, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+OPEND                   BITMAP                  "res\\bitmap1.bmp"
+OPENU                   BITMAP                  "res\\bitmap2.bmp"
+FFORWARDU               BITMAP                  "res\\bitmap3.bmp"
+STOPD                   BITMAP                  "res\\bitmap4.bmp"
+STOPU                   BITMAP                  "res\\bitmap5.bmp"
+PLAYD                   BITMAP                  "res\\bitmap6.bmp"
+PLAYU                   BITMAP                  "res\\bitmap7.bmp"
+PAUSEU                  BITMAP                  "res\\bitmap8.bmp"
+PAUSED                  BITMAP                  "res\\bitmap9.bmp"
+FFORWARDD               BITMAP                  "res\\bitmap10.bmp"
+REWINDU                 BITMAP                  "res\\bitmap11.bmp"
+REWINDD                 BITMAP                  "res\\bitmap12.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAIN_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open",                       ID_OPEN
+        MENUITEM "&Reload",                     ID_FILE_RELOAD
+        MENUITEM "&Go",                         ID_FILE_GO
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&Size"
+    BEGIN
+        MENUITEM "1080P (1920x1080)",           ID_SIZE_HD
+        MENUITEM "720P  (1280x720)",            ID_SIZE_SD
+        MENUITEM "&VGA   (640x480)",            ID_SIZE_VGA
+        MENUITEM SEPARATOR
+        MENUITEM "&WVGA   (832x480)",           ID_SIZE_WVGA
+        MENUITEM "WQVGA (416x240)",             ID_SIZE_WQVGA
+        MENUITEM SEPARATOR
+        MENUITEM "&CIF      (352x288)",         ID_SIZE_CIF, CHECKED
+        MENUITEM "&QCIF    (176x144)",          ID_SIZE_QCIF
+        MENUITEM "SMALL (192x256)",             ID_SIZE_192X256
+        MENUITEM SEPARATOR
+        MENUITEM "C&ustom",                     ID_SIZE_CUSTOM
+    END
+    POPUP "&Color"
+    BEGIN
+        MENUITEM "YUV420 10bitLE",              ID_COLOR_YUV420_10LE
+        MENUITEM "YUV420 10bitBE",              ID_COLOR_YUV420_10BE
+        MENUITEM SEPARATOR
+        MENUITEM "YUV&444",                     ID_COLOR_YUV444
+        MENUITEM "YUV4&22",                     ID_COLOR_YUV422
+        MENUITEM "YUV42&0",                     ID_COLOR_YUV420, CHECKED
+        MENUITEM "&Y",                          ID_COLOR_Y
+        MENUITEM SEPARATOR
+        MENUITEM "YUV",                         ID_COLOR_PACKEDYUV444
+        MENUITEM "&UYVY",                       ID_COLOR_UYVY
+        MENUITEM "YUY&V",                       ID_COLOR_YUYV
+        MENUITEM "NV12",                        ID_COLOR_NV12
+        MENUITEM "NV21",                        ID_COLOR_NV21
+        MENUITEM SEPARATOR
+        MENUITEM "RGB32",                       ID_COLOR_RGB32
+        MENUITEM "RGB24",                       ID_COLOR_RGB24
+        MENUITEM "RGB16",                       ID_COLOR_RGB16
+    END
+    POPUP "&Zoom"
+    BEGIN
+        MENUITEM "&4:1",                        ID_ZOOM_41
+        MENUITEM "&2:1",                        ID_ZOOM_21
+        MENUITEM "&1:1",                        ID_ZOOM_11, CHECKED
+        MENUITEM "1:2",                         ID_ZOOM_12
+        MENUITEM "1:4",                         ID_ZOOM_14
+    END
+    POPUP "Segment"
+    BEGIN
+        MENUITEM "64x64 (RED)",                 ID_SEGMENT_64X64
+        MENUITEM "32x32 (GREEN)",               ID_SEGMENT_32X32
+        MENUITEM "16x16 (BLUE)",                ID_SEGMENT_16X16
+    END
+END
+
+IDR_CMENU MENU
+BEGIN
+    POPUP "ContextMenu"
+    BEGIN
+        MENUITEM "Save Luminance",              ID_CMENU_SAVE_LUMINANCE
+        MENUITEM "Save YUV444",                 ID_CMENU_SAVE_YUV444
+        MENUITEM "Save YUV422",                 ID_CMENU_SAVE_YUV422
+        MENUITEM "Save YUV420",                 ID_CMENU_SAVE_YUV420
+        MENUITEM "Save RGB",                    ID_CMENU_SAVE_RGB
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_YUVPLAYER_DIALOG, DIALOG
+    BEGIN
+    END
+
+    IDD_CUSTOM_SIZE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 71
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+
+    IDD_GO_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 112
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 19
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
+#endif    // 한국어(대한민국) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
+LANGUAGE 18, 1
+#pragma code_page(949)
+#include "res\yuvplayer.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
