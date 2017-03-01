@@ -47,6 +47,50 @@
 #define new DEBUG_NEW
 #endif
 
+typedef struct
+{
+	wchar_t* string;
+
+	int   width;
+	int   height;
+
+	UINT  size_id;
+
+} size_info_t;
+
+// [FIXME]
+// in near future, update me to PCRE
+static const size_info_t size_info[] = {
+	{ L"1920x1080", 1920, 1080, ID_SIZE_HD },
+	{ L"1080p", 1920, 1080, ID_SIZE_HD },
+
+	{ L"1280x720", 1280, 720, ID_SIZE_SD },
+	{ L"720p", 1280, 720, ID_SIZE_SD },
+
+	{ L"832x480", 832, 480, ID_SIZE_WVGA },
+	{ L"wvga", 832, 480, ID_SIZE_WVGA },
+
+	{ L"416x240", 416, 240, ID_SIZE_WQVGA },
+	{ L"wqvga", 416, 240, ID_SIZE_WQVGA },
+
+	{ L"640x480", 640, 480, ID_SIZE_VGA },
+	{ L"vga", 640, 480, ID_SIZE_VGA },
+
+	{ L"176x144", 176, 144, ID_SIZE_QCIF },
+	{ L"qcif", 176, 144, ID_SIZE_QCIF },
+
+	{ L"352x288", 352, 288, ID_SIZE_CIF },
+	{ L"cif", 352, 288, ID_SIZE_CIF },
+
+	{ L"192x256", 192, 256, ID_SIZE_192X256 },
+
+	{ L"3840x2160", 3840, 2160, ID_SIZE_CUSTOM },
+	{ L"1920x1088", 1920, 1088, ID_SIZE_CUSTOM },
+	{ L"2560x1600", 2560, 1600, ID_SIZE_CUSTOM },
+
+	// end delimiter
+	{ NULL, 0, 0, 0 }
+};
 
 // CyuvplayerDlg dialog
 CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
@@ -271,12 +315,12 @@ void CyuvplayerDlg::OnOpen()
 	if( IDOK != dlg.DoModal() )
 		return;	
 
-	CString cfilename = dlg.GetPathName();
-	wchar_t* path = cfilename.GetBuffer(0);
+	CString cpathname = dlg.GetPathName();
+	wchar_t* path = cpathname.GetBuffer(0);
 
 	FileOpen( path );
-	cfilename.ReleaseBuffer();
 
+	cpathname.ReleaseBuffer();
 }
 
 void CyuvplayerDlg::OnFileReload()
@@ -337,6 +381,7 @@ void CyuvplayerDlg::OnSizeChange(UINT nID )
 			return;
 
 	}
+
 	// custom resolution window 
 	if( customDlg->DoModal() != IDOK )
 		return;
@@ -1040,6 +1085,10 @@ void CyuvplayerDlg::OnDestroy()
 
 void CyuvplayerDlg::FileOpen( wchar_t* path )
 {
+	int i, j;
+	wchar_t* file;
+	wchar_t* end;
+
 	StopTimer();
 	
 	if( fd > -1 )
@@ -1050,6 +1099,33 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 
 	started = FALSE;
 	cur = 0;
+
+	// get filename
+	if ((file = wcsrchr(path, L'\\')) == NULL)
+		file = path;
+	else
+		file = file++;
+	
+	// guess size
+	wcstol(file, &end, 0);
+
+	for (i = 0; size_info[i].string != NULL; i++)
+	{
+		if (wcsstr(file, size_info[i].string) != NULL)
+		{
+			// uncheck all size menu items
+			for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
+				menu->CheckMenuItem(j, MF_UNCHECKED);
+
+			// update SELECTED size
+			menu->CheckMenuItem(size_info[i].size_id, MF_CHECKED);
+
+			// reallocate memory
+			Resize(size_info[i].width, size_info[i].height);
+
+			break;
+		}
+	}
 
 	UpdateParameter();
 	LoadFrame();
