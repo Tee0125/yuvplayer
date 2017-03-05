@@ -43,8 +43,16 @@
 #include <sys/types.h>
 #include <share.h>
 
+#ifdef SUPPORT_PCRE
+#	include "pcre.h"
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#endif
+
+#ifdef SUPPORT_PCRE
+#	define REGEX_BUF_SIZE 10
 #endif
 
 typedef struct
@@ -58,7 +66,20 @@ typedef struct
 
 } size_info_t;
 
-// [FIXME]
+#ifdef SUPPORT_PCRE
+static const size_info_t size_info[] = {
+	{ L"1080p", 1920, 1080, ID_SIZE_HD },
+	{ L"720p", 1280, 720, ID_SIZE_SD },
+	{ L"wvga", 832, 480, ID_SIZE_WVGA },
+	{ L"wqvga", 416, 240, ID_SIZE_WQVGA },
+	{ L"vga", 640, 480, ID_SIZE_VGA },
+	{ L"qcif", 176, 144, ID_SIZE_QCIF },
+	{ L"cif", 352, 288, ID_SIZE_CIF },
+
+	// end delimiter
+	{ NULL, 0, 0, 0 }
+};
+#else
 // in near future, update me to PCRE
 static const size_info_t size_info[] = {
 	{ L"1920x1080", 1920, 1080, ID_SIZE_HD },
@@ -91,6 +112,7 @@ static const size_info_t size_info[] = {
 	// end delimiter
 	{ NULL, 0, 0, 0 }
 };
+#endif
 
 // CyuvplayerDlg dialog
 CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
@@ -1089,6 +1111,21 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 	wchar_t* file;
 	wchar_t* end;
 
+#ifdef SUPPORT_PCRE
+	pcre16* regex;
+
+	wchar_t* pattern;
+	int pattern_len;
+
+	int pcre_vector[REGEX_BUF_SIZE];
+
+	const char* err;
+	int err_offset;
+
+	int w, h;
+	int rc;
+#endif
+
 	StopTimer();
 	
 	if( fd > -1 )
@@ -1109,6 +1146,55 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 	// guess size
 	wcstol(file, &end, 0);
 
+#ifdef SUPPORT_PCRE
+	regex = pcre16_compile((PCRE_SPTR16)L"_(1080p|720p|wvga|wqvga|vga|qcif|cif|[1-9][0-9]*[x][1-9][0-9]*)_", PCRE_UTF16, &err, &err_offset, NULL);
+
+	if (regex)
+	{
+		rc = pcre16_exec(regex, NULL, (PCRE_SPTR16)file, wcslen(file), 0, 0, pcre_vector, REGEX_BUF_SIZE);
+
+		if (rc > 1)
+		{
+			pattern = file + pcre_vector[2 * 1 + 0];
+			pattern_len = pcre_vector[2 * 1 + 1] - pcre_vector[2 * 1 + 0];
+
+			for (i = 0; size_info[i].string != NULL; i++)
+			{
+				if (wcsncmp(pattern, size_info[i].string, pattern_len) == 0)
+				{
+					// uncheck all size menu items
+					for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
+						menu->CheckMenuItem(j, MF_UNCHECKED);
+
+					// update SELECTED size
+					menu->CheckMenuItem(size_info[i].size_id, MF_CHECKED);
+
+					// reallocate memory
+					Resize(size_info[i].width, size_info[i].height);
+
+					break;
+				}
+			}
+
+			if (size_info[i].string == NULL)
+			{
+				swscanf(pattern, L"%dx%d", &w, &h);
+
+				// uncheck all size menu items
+				for (j = ID_SIZE_START; j <= ID_SIZE_END; j++)
+					menu->CheckMenuItem(j, MF_UNCHECKED);
+
+				// update SELECTED size
+				menu->CheckMenuItem(ID_SIZE_CUSTOM, MF_CHECKED);
+
+				// reallocate memory
+				Resize(w, h);
+			}
+		}
+
+		pcre16_free(regex);
+	}
+#else
 	for (i = 0; size_info[i].string != NULL; i++)
 	{
 		if (wcsstr(file, size_info[i].string) != NULL)
@@ -1126,6 +1212,7 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 			break;
 		}
 	}
+#endif
 
 	UpdateParameter();
 	LoadFrame();
