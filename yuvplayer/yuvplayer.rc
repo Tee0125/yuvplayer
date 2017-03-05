@@ -104,8 +104,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,0,0
- PRODUCTVERSION 2,4,0,0
+ FILEVERSION 2,5,0,0
+ PRODUCTVERSION 2,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -121,12 +121,12 @@ BEGIN
         BLOCK "080004e4"
         BEGIN
             VALUE "FileDescription", "YUV file viewer"
-            VALUE "FileVersion", "2.4.0.0"
+            VALUE "FileVersion", "2.5.0.0"
             VALUE "InternalName", "yuvplayer.exe"
             VALUE "LegalCopyright", "Copyright Tae-young (c).  All rights reserved."
             VALUE "OriginalFilename", "yuvplayer.exe"
             VALUE "ProductName", "YUVplayer"
-            VALUE "ProductVersion", "2.4.0.0"
+            VALUE "ProductVersion", "2.5.0.0"
         END
     END
     BLOCK "VarFileInfo"
