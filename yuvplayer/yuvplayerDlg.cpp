@@ -331,7 +331,7 @@ void CyuvplayerDlg::OnOpen()
 	CFileDialog	dlg(
 			TRUE, _T("YUV"), NULL,
 			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT, 
-			_T("Image Files (YUV...)|*.YUV|")
+			_T("Image Files (YUV, RAW, IMG, ...)|*.YUV;*.RAW;*.IMG|")
 			);
 
 	if( IDOK != dlg.DoModal() )
@@ -1295,8 +1295,8 @@ void CyuvplayerDlg::OnCmenuSaveLuminance()
 	wsprintf( buf, L"%s_%d_y.raw", filename, cur );
 	CFileDialog	dlg(
 			TRUE, _T("RAW"), buf,
-			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT, 
-			_T("RAW Files (RAW...)|*.RAW|")
+			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+			_T("RAW Files (RAW)|*.RAW|")
 			);
 
 	if( IDOK != dlg.DoModal() )
@@ -1343,8 +1343,8 @@ void CyuvplayerDlg::OnCmenuSaveYuv( color_format type )
 
 	CFileDialog	dlg(
 			TRUE, _T("YUV"), buf,
-			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT, 
-			_T("RAW Files (YUV...)|*.YUV|")
+			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+			_T("YUV Files (YUV)|*.YUV|")
 			);
 
 	if( IDOK != dlg.DoModal() )
@@ -1574,8 +1574,8 @@ void CyuvplayerDlg::OnCmenuSaveRgb()
 	wsprintf( buf, L"%s_%d_rgb.bmp", filename, cur );
 	CFileDialog	dlg(
 			TRUE, _T("BMP"), buf,
-			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT, 
-			_T("BMP Files (BMP...)|*.BMP|")
+			OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+			_T("BMP Files (BMP)|*.BMP|")
 			);
 
 	if( IDOK != dlg.DoModal() )
