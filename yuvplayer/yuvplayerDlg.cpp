@@ -523,6 +523,10 @@ void CyuvplayerDlg::OnColor(UINT nID )
 			menu->CheckMenuItem( ID_COLOR_YUV420_10BE, MF_CHECKED);
 			m_color = YUV420_10BE;
 			break;
+		case ID_COLOR_V210_10Bit:
+			menu->CheckMenuItem(ID_COLOR_V210_10Bit, MF_CHECKED);
+			m_color = YUV422P10LE;
+			break;
         
 		case ID_COLOR_YUV444:
 			menu->CheckMenuItem( ID_COLOR_YUV444, MF_CHECKED);
@@ -629,6 +633,11 @@ void CyuvplayerDlg::UpdateParameter()
 	else 
 		frame_size = frame_size_y + 2*frame_size_uv;
 
+	if(m_color == YUV422P10LE)
+	{
+		int linepitch = width * 8 / 3 / 4;
+		frame_size = linepitch*height*4;
+	}
 	count = (int)(size / frame_size);
 
 	m_slider.SetRange(0, count);
@@ -668,6 +677,12 @@ void CyuvplayerDlg::LoadFrame(void)
 	{
 		_read( fd, y,    frame_size_y );
 		_read( fd, misc, frame_size_y/2 );
+	}
+
+	else if (m_color == YUV422P10LE)
+	{
+		memset(misc, 0, frame_size);
+		_read(fd, misc, frame_size);
 	}
 
     else if ( m_color == PACKED_YUV444 )
@@ -890,7 +905,49 @@ void CyuvplayerDlg::yuv2rgb(void)
 			line += t_width<<2;
 		}	
 	}
+	else if(m_color == YUV422P10LE)	{
+		unsigned int *buffer = (unsigned int *)misc;
+		for(int h=0;h<(height);h++)
+		{
+			cur = line;
+			for (int i = 0; i < width / 6; i++)
+			{
+				unsigned short U1_10b = (0x3FF & buffer[0]);	//	printf("U1 %d\n", U1_10b);
+				unsigned short Y1_10b = (0xFF300 & buffer[0]) >> 10; //	printf("Y1 %d\n", Y1_10b);
+				unsigned short V1_10b = (0x3ff00000 & buffer[0]) >> 20;	//	printf("V1 %d\n", V1_10b);
+				unsigned short Y2_10b = (0x3FF & buffer[1]);	//	printf("Y2 %d\n", Y2_10b);
+				unsigned short U2_10b = (0xFF300 & buffer[1]) >> 10;	//	printf("U2 %d\n", U2_10b);
+				unsigned short Y3_10b = (0x3ff00000 & buffer[1]) >> 20; //	printf("Y3 %d\n", Y3_10b);
 
+				unsigned short V2_10b = (0x3FF & buffer[2]);	//	printf("V2 %d\n", V2_10b);
+				unsigned short Y4_10b = (0xFF300 & buffer[2]) >> 10; //	printf("Y4 %d\n", Y4_10b);
+				unsigned short U3_10b = (0x3ff00000 & buffer[2]) >> 20;	//	printf("U3 %d\n", U3_10b);
+				unsigned short Y5_10b = (0x3FF & buffer[3]); //	printf("Y5 %d\n", Y5_10b);
+				unsigned short V3_10b = (0xFF300 & buffer[3]) >> 10;	//	printf("V3 %d\n", V2_10b);
+				unsigned short Y6_10b = (0x3ff00000 & buffer[3]) >> 20; //	printf("Y6 %d\n", Y6_10b);				
+				auto pyuvtorgb = [&](int c,int d,int e){
+					c = c - 16;    // Y1
+					d = d - 128;   // U
+					e = e - 128;   // V
+
+					(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> 10); cur++;
+					(*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> 10); cur++;
+					(*cur) = clip((298 * c + 516 * d + (128 << 2)) >> 10); cur += 2;
+				};
+				pyuvtorgb((Y1_10b >> 2) & 0xFF, (U1_10b >> 2) & 0xFF, (V1_10b >> 2) & 0xFF);
+				pyuvtorgb((Y2_10b >> 2) & 0xFF, (U1_10b >> 2) & 0xFF, (V1_10b >> 2) & 0xFF);
+
+				pyuvtorgb((Y3_10b >> 2) & 0xFF, (U2_10b >> 2) & 0xFF, (V2_10b >> 2) & 0xFF);
+				pyuvtorgb((Y4_10b >> 2) & 0xFF, (U2_10b >> 2) & 0xFF, (V2_10b >> 2) & 0xFF);
+
+				pyuvtorgb((Y5_10b >> 2) & 0xFF, (U3_10b >> 2) & 0xFF, (V3_10b >> 2) & 0xFF);
+				pyuvtorgb((Y6_10b >> 2) & 0xFF, (U3_10b >> 2) & 0xFF, (V3_10b >> 2) & 0xFF);
+				/**/
+				buffer += 4;
+			}
+			line += t_width << 2;
+		}
+	}
 	else { // YYY
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
@@ -1353,7 +1410,7 @@ void CyuvplayerDlg::OnCmenuSaveYuv( color_format type )
 	CString cpath = dlg.GetPathName();
 	wchar_t* path = cpath.GetBuffer(0);
 
-	_wsopen_s( &ofd, path, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, _SH_DENYWR, _S_IREAD | _S_IWRITE );
+	errno_t er = _wsopen_s( &ofd, path, O_WRONLY|O_BINARY|O_CREAT|O_TRUNC, _SH_DENYWR, _S_IREAD | _S_IWRITE );
 	if( ofd < 0 ){
 
 		wsprintf( buf, L"Can't Open %s for writing", path );
@@ -1368,7 +1425,7 @@ void CyuvplayerDlg::OnCmenuSaveYuv( color_format type )
 			if( type == YUV444 )
 				rgb2yuv444();
 			else if( type == YUV422 )
-				rgb2yuv422();
+				rgb2yuv422(true);
 			else
 				rgb2yuv420();
 
@@ -1426,7 +1483,7 @@ void CyuvplayerDlg::rgb2yuv444(){
 
 }
 
-void CyuvplayerDlg::rgb2yuv422(){
+void CyuvplayerDlg::rgb2yuv422(bool needY){
 
 	int j, i;
 	int idx;
@@ -1436,21 +1493,23 @@ void CyuvplayerDlg::rgb2yuv422(){
 	unsigned char* pos;
 	unsigned char* line;
 	
-	/*
-	idx = 0; line = rgba;
-	for( j = 0 ; j < height ; j++ ){
-		pos = line;
-		for( i = 0 ; i < width ; i++ ){
-			r = *pos; pos++;
-			g = *pos; pos++;
-			b = *pos; pos+=2;
+	if (needY)
+	{
+		idx = 0; line = rgba;
+		for (j = 0; j < height; j++) {
+			pos = line;
+			for (i = 0; i < width; i++) {
+				r = *pos; pos++;
+				g = *pos; pos++;
+				b = *pos; pos += 2;
 
-			y[idx] = ((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
-			idx++;
+				y[idx] = ((66 * r + 129 * g + 25 * b + 128) >> 8) + 16;
+				idx++;
+			}
+			line += t_width * 4;
 		}
-		line += t_width*4;
 	}
-	*/
+	
 
 	idx = 0; line = rgba;
 	for( j = 0 ; j < height ; j++ ){

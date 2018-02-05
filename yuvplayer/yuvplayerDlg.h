@@ -48,7 +48,7 @@
 #define MARGIN 2
 #define MAX_PATH_LEN 1024
 
-enum color_format { YUV420_10BE, YUV420_10LE, YUV444, YUV422, YUV420, UYVY, YUYV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16 };
+enum color_format { YUV420_10BE, YUV420_10LE, YUV422P10LE, YUV444, YUV422, YUV420, UYVY, YUYV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16 };
 enum segment_type { SEGMENT16x16 = 1, SEGMENT32x32 = 2, SEGMENT64x64 = 4};
 
 // CyuvplayerDlg dialog
@@ -124,7 +124,7 @@ private:
 	void StartTimer(void);
 	void StopTimer(void);
 	void rgb2yuv444();
-	void rgb2yuv422();
+	void rgb2yuv422(bool needY);
 	void rgb2yuv420();
 	void OnCmenuSaveYuv( color_format type );
 

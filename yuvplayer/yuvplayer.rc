@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 한국어(대한민국) resources
+// Korean (Korea) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -199,6 +199,7 @@ BEGIN
     BEGIN
         MENUITEM "YUV420 10bitLE",              ID_COLOR_YUV420_10LE
         MENUITEM "YUV420 10bitBE",              ID_COLOR_YUV420_10BE
+        MENUITEM "YUV422p10bitLE",              ID_COLOR_V210_10Bit
         MENUITEM SEPARATOR
         MENUITEM "YUV&444",                     ID_COLOR_YUV444
         MENUITEM "YUV4&22",                     ID_COLOR_YUV422
@@ -284,7 +285,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
 
-#endif    // 한국어(대한민국) resources
+#endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
