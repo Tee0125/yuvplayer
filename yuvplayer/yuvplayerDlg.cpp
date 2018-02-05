@@ -926,22 +926,20 @@ void CyuvplayerDlg::yuv2rgb(void)
 				unsigned short V3_10b = (0xFF300 & buffer[3]) >> 10;	//	printf("V3 %d\n", V2_10b);
 				unsigned short Y6_10b = (0x3ff00000 & buffer[3]) >> 20; //	printf("Y6 %d\n", Y6_10b);				
 				auto pyuvtorgb = [&](int c,int d,int e){
-					c = c - 16;    // Y1
-					d = d - 128;   // U
-					e = e - 128;   // V
+					c = (c >> 2) & 0xFF - 16;    // Y1
+					d = (d >> 2) & 0xFF - 128;   // U
+					e = (e >> 2) & 0xFF - 128;   // V
 
-					(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> 10); cur++;
-					(*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> 10); cur++;
-					(*cur) = clip((298 * c + 516 * d + (128 << 2)) >> 10); cur += 2;
+					(*cur) = clip((298 * c           + 409 * e + 128) >> 8); cur++;
+					(*cur) = clip((298 * c - 100 * d - 208 * e + 128) >> 8); cur++;
+					(*cur) = clip((298 * c + 516 * d           + 128) >> 8); cur += 2;
 				};
-				pyuvtorgb((Y1_10b >> 2) & 0xFF, (U1_10b >> 2) & 0xFF, (V1_10b >> 2) & 0xFF);
-				pyuvtorgb((Y2_10b >> 2) & 0xFF, (U1_10b >> 2) & 0xFF, (V1_10b >> 2) & 0xFF);
-
-				pyuvtorgb((Y3_10b >> 2) & 0xFF, (U2_10b >> 2) & 0xFF, (V2_10b >> 2) & 0xFF);
-				pyuvtorgb((Y4_10b >> 2) & 0xFF, (U2_10b >> 2) & 0xFF, (V2_10b >> 2) & 0xFF);
-
-				pyuvtorgb((Y5_10b >> 2) & 0xFF, (U3_10b >> 2) & 0xFF, (V3_10b >> 2) & 0xFF);
-				pyuvtorgb((Y6_10b >> 2) & 0xFF, (U3_10b >> 2) & 0xFF, (V3_10b >> 2) & 0xFF);
+				pyuvtorgb(Y1_10b,U1_10b ,V1_10b );
+				pyuvtorgb(Y2_10b,U1_10b ,V1_10b );
+				pyuvtorgb(Y3_10b,U2_10b ,V2_10b );
+				pyuvtorgb(Y4_10b,U2_10b ,V2_10b );
+				pyuvtorgb(Y5_10b,U3_10b ,V3_10b );
+				pyuvtorgb(Y6_10b,U3_10b ,V3_10b );
 				/**/
 				buffer += 4;
 			}
