@@ -48,7 +48,7 @@
 #define MARGIN 2
 #define MAX_PATH_LEN 1024
 
-enum color_format { YUV420_10BE, YUV420_10LE, YUV444, YUV422, YUV420, UYVY, YUYV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16 };
+enum color_format { YUV420_10BE, YUV420_10LE, YUV444, YUV422, YUV420, UYVY, YUYV, AYUV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16, P010, P010MSB, P210, P210MSB, Y210, Y210MSB, Y216, Y410 };
 enum segment_type { SEGMENT16x16 = 1, SEGMENT32x32 = 2, SEGMENT64x64 = 4};
 
 // CyuvplayerDlg dialog
@@ -57,6 +57,8 @@ class CyuvplayerDlg : public CDialog
 // Construction
 public:
 	CyuvplayerDlg(CWnd* pParent = NULL);	// standard constructor
+
+    ~CyuvplayerDlg();
 
 // Dialog Data
 	enum { IDD = IDD_YUVPLAYER_DIALOG };
@@ -76,7 +78,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	wchar_t* filename;
+	wchar_t filename[MAX_PATH_LEN];
 
 	int fd; 
 

@@ -55,27 +55,37 @@
 #define ID_COLOR_RGB32                  40011
 #define ID_COLOR_RGB24                  40012
 #define ID_COLOR_RGB16                  40013
-#define ID_COLOR_END                    40013
+#define ID_COLOR_P010                   40014
+#define ID_COLOR_P010MSB                40015
+#define ID_COLOR_P210                   40016
+#define ID_COLOR_P210MSB                40017
+#define ID_COLOR_Y210                   40018
+#define ID_COLOR_Y210MSB                40019
+#define ID_COLOR_Y216                   40020
+#define ID_COLOR_Y410                   40021
+#define ID_COLOR_AYUV                   40022
+#define ID_COLOR_END                    40022
 
-#define ID_SIZE_START                   40020
-#define ID_SIZE_HD                      40020
-#define ID_SIZE_SD                      40021
-#define ID_SIZE_VGA                     40022
-#define ID_SIZE_WVGA                    40023
-#define ID_SIZE_WQVGA                   40024
-#define ID_SIZE_CIF                     40025
-#define ID_SIZE_QCIF                    40026
-#define ID_SIZE_192X256                 40027
-#define ID_SIZE_CUSTOM                  40028
-#define ID_SIZE_END                     40028
+#define ID_SIZE_START                   40030
+#define ID_SIZE_4K                      40030
+#define ID_SIZE_HD                      40031
+#define ID_SIZE_SD                      40032
+#define ID_SIZE_VGA                     40033
+#define ID_SIZE_WVGA                    40034
+#define ID_SIZE_WQVGA                   40035
+#define ID_SIZE_CIF                     40036
+#define ID_SIZE_QCIF                    40037
+#define ID_SIZE_192X256                 40038
+#define ID_SIZE_CUSTOM                  40039
+#define ID_SIZE_END                     40039
 
-#define ID_ZOOM_START                   40040
-#define ID_ZOOM_41                      40040
-#define ID_ZOOM_21                      40041
-#define ID_ZOOM_11                      40042
-#define ID_ZOOM_12                      40043
-#define ID_ZOOM_14                      40044
-#define ID_ZOOM_END                     40044
+#define ID_ZOOM_START                   40050
+#define ID_ZOOM_41                      40050
+#define ID_ZOOM_21                      40051
+#define ID_ZOOM_11                      40052
+#define ID_ZOOM_12                      40053
+#define ID_ZOOM_14                      40054
+#define ID_ZOOM_END                     40054
 
 #define ID_SEGMENT_START                40060
 #define ID_SEGMENT_64X64                40060
@@ -88,7 +98,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32832
+#define _APS_NEXT_COMMAND_VALUE         32838
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

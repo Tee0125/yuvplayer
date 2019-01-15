@@ -82,6 +82,9 @@ static const size_info_t size_info[] = {
 #else
 // in near future, update me to PCRE
 static const size_info_t size_info[] = {
+	{ L"3840x2160", 3840, 2160, ID_SIZE_4K },
+    { L"4K", 1920, 1080, ID_SIZE_4K },
+
 	{ L"1920x1080", 1920, 1080, ID_SIZE_HD },
 	{ L"1080p", 1920, 1080, ID_SIZE_HD },
 
@@ -105,7 +108,6 @@ static const size_info_t size_info[] = {
 
 	{ L"192x256", 192, 256, ID_SIZE_192X256 },
 
-	{ L"3840x2160", 3840, 2160, ID_SIZE_CUSTOM },
 	{ L"1920x1088", 1920, 1088, ID_SIZE_CUSTOM },
 	{ L"2560x1600", 2560, 1600, ID_SIZE_CUSTOM },
 
@@ -113,6 +115,16 @@ static const size_info_t size_info[] = {
 	{ NULL, 0, 0, 0 }
 };
 #endif
+#pragma pack(push,1)
+typedef struct
+{
+	unsigned int U : 10;
+	unsigned int Y : 10;
+	unsigned int V : 10;
+	unsigned int A : 2;
+} Y410Pack;
+#pragma pack(pop)
+
 
 // CyuvplayerDlg dialog
 CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
@@ -131,10 +143,14 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 	count = cur = 0;
 	started = FALSE;
 
-	filename = new wchar_t[MAX_PATH_LEN];
 	wsprintf(filename, L"%s", L"YUV player");
 
 	OpenGLView = new COpenGLView;
+}
+
+CyuvplayerDlg::~CyuvplayerDlg()
+{
+    delete[] segment;
 }
 
 void CyuvplayerDlg::DoDataExchange(CDataExchange* pDX)
@@ -282,7 +298,8 @@ void CyuvplayerDlg::Resize(int width, int height)
 	v = new unsigned char[width*height*2];
 	
 	rgba    = new unsigned char[t_width*t_height*4];
-	segment = new unsigned char[t_width*t_height*4];
+	
+    segment = new unsigned char[t_width*t_height*4];
 	
 	// reset alpha value to 255
 	memset( rgba, 255, sizeof(unsigned char)*t_width*t_height*4 );
@@ -362,6 +379,11 @@ void CyuvplayerDlg::OnSizeChange(UINT nID )
 			menu->CheckMenuItem(i,	MF_UNCHECKED);
 
 	switch( nID ){
+		case ID_SIZE_4K:
+			menu->CheckMenuItem(ID_SIZE_4K, MF_CHECKED);
+			Resize(3840, 2160);
+			return;
+
 		case ID_SIZE_HD:
 			menu->CheckMenuItem( ID_SIZE_HD,	MF_CHECKED);
 			Resize( 1920, 1080 );
@@ -565,6 +587,11 @@ void CyuvplayerDlg::OnColor(UINT nID )
 			m_color = YUYV;
 			break;
 
+		case ID_COLOR_AYUV:
+			menu->CheckMenuItem(ID_COLOR_AYUV, MF_CHECKED);
+			m_color = AYUV;
+			break;
+
 		// RGB
 		case ID_COLOR_RGB32:
 			menu->CheckMenuItem( ID_COLOR_RGB32,   MF_CHECKED);
@@ -579,6 +606,38 @@ void CyuvplayerDlg::OnColor(UINT nID )
 		case ID_COLOR_RGB16:
 			menu->CheckMenuItem( ID_COLOR_RGB16,   MF_CHECKED);
 			m_color = RGB16;
+			break;
+		case ID_COLOR_P010:
+			menu->CheckMenuItem(ID_COLOR_P010, MF_CHECKED);
+			m_color = P010;
+			break;
+		case ID_COLOR_P010MSB:
+			menu->CheckMenuItem(ID_COLOR_P010MSB, MF_CHECKED);
+			m_color = P010MSB;
+			break;
+		case ID_COLOR_P210:
+			menu->CheckMenuItem(ID_COLOR_P210, MF_CHECKED);
+			m_color = P210;
+			break;
+        case ID_COLOR_P210MSB:
+            menu->CheckMenuItem(ID_COLOR_P210MSB, MF_CHECKED);
+            m_color = P210MSB;
+            break;
+		case ID_COLOR_Y210:
+			menu->CheckMenuItem(ID_COLOR_Y210, MF_CHECKED);
+			m_color = Y210;
+			break;
+		case ID_COLOR_Y210MSB:
+			menu->CheckMenuItem(ID_COLOR_Y210MSB, MF_CHECKED);
+			m_color = Y210MSB;
+			break;
+		case ID_COLOR_Y216:
+			menu->CheckMenuItem(ID_COLOR_Y216, MF_CHECKED);
+			m_color = Y216;
+			break;
+		case ID_COLOR_Y410:
+			menu->CheckMenuItem(ID_COLOR_Y410, MF_CHECKED);
+			m_color = Y410;
 			break;
 
 		// grey
@@ -609,24 +668,30 @@ void CyuvplayerDlg::UpdateParameter()
 		frame_size_uv = width*height;
 	else if (m_color == YUV422 || m_color == UYVY || m_color == YUYV)
 		frame_size_uv = ((width+1)>>1)*height;
+	else if (m_color == P010 || m_color == P010MSB)
+		frame_size_uv = ((width + 1) >> 1 << 1)*((height+1)>>1);
+	else if(m_color == P210 || m_color == P210MSB)
+		frame_size_uv = (((width + 1) >> 1) << 1)*((height + 1) >> 1 << 1);
 	else if (m_color == YUV420 || m_color == NV12 || m_color == NV21 || m_color == YUV420_10LE || m_color == YUV420_10BE)
 		frame_size_uv = ((width+1)>>1) * ((height+1)>>1);
 	else 
 		frame_size_uv = 0;
     
-    if ( m_color == YUV420_10LE || m_color == YUV420_10BE)
+    if ( m_color == YUV420_10LE || m_color == YUV420_10BE || m_color == P010 || m_color == P010MSB || m_color == P210 || m_color == P210MSB)
     {
         frame_size_y  *= 2;
         frame_size_uv *= 2; 
     }
 
-	if (m_color == RGB32)
+	if (m_color == RGB32 || m_color == Y210 || m_color == Y210MSB || m_color == Y216 || m_color == Y410 || m_color == AYUV)
 		frame_size = frame_size_y*4;
 	else if (m_color == RGB24)
 		frame_size = frame_size_y*3;
 	else if (m_color == RGB16)
 		frame_size = frame_size_y*2;
-	else 
+	else if (m_color == P010 || m_color == P010MSB || m_color == P210 || m_color == P210MSB)
+        frame_size = frame_size_y + frame_size_uv;
+	else
 		frame_size = frame_size_y + 2*frame_size_uv;
 
 	count = (int)(size / frame_size);
@@ -649,7 +714,7 @@ void CyuvplayerDlg::LoadFrame(void)
 
 	_lseeki64( fd, (__int64)cur*(__int64)frame_size, SEEK_SET );
 
-	if( m_color == RGB32 )
+	if( m_color == RGB32 || m_color == Y210 || m_color == Y210MSB || m_color == Y216 || m_color == Y410 || m_color == AYUV)
 		_read( fd, misc, frame_size_y*4 );
 
 	else if( m_color == RGB24 )
@@ -669,10 +734,13 @@ void CyuvplayerDlg::LoadFrame(void)
 		_read( fd, y,    frame_size_y );
 		_read( fd, misc, frame_size_y/2 );
 	}
-
+    else if (m_color == P010 || m_color == P010MSB || m_color == P210 || m_color == P210MSB)
+    {
+        _read(fd, y, frame_size_y);
+        _read(fd, misc, frame_size_uv);
+    }
     else if ( m_color == PACKED_YUV444 )
         _read( fd, misc, frame_size );
-
 	else
 	{
 		_read( fd, y, frame_size_y );
@@ -798,7 +866,23 @@ void CyuvplayerDlg::yuv2rgb(void)
 			line += t_width<<2;
 		}
 	}
+	else if (m_color == AYUV) {
+		unsigned char* t = misc;
+		for (j = 0; j < height; j++) {
+			cur = line;
+			for (i = 0; i < width; i++) 
+			{
+				c = misc[j*width * 4 + i*4 +2] - 16;    // Y
+				d = misc[j*width * 4 + i*4 + 1] - 128;   // U
+				e = misc[j*width * 4 + i*4] - 128;   // V
 
+				(*cur) = clip((298 * c + 409 * e + 128) >> 8); cur++;
+				(*cur) = clip((298 * c - 100 * d - 208 * e + 128) >> 8); cur++;
+				(*cur) = clip((298 * c + 516 * d + 128) >> 8); cur += 2;
+			}
+			line += t_width << 2;
+		}
+	}
 	else if( m_color == YUV420 || m_color == NV12 || m_color == NV21 ){
 		stride_uv = (width+1)>>1;
 
@@ -829,8 +913,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 			}
 			line += t_width<<2;
 		}
-	}
-    
+	}    
 	else if( m_color == YUV420_10LE || m_color == YUV420_10BE ){
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
@@ -860,20 +943,122 @@ void CyuvplayerDlg::yuv2rgb(void)
 			line += t_width<<2;
 		}
 	}
+	else if (m_color == P010 || m_color == P010MSB)
+	{
+		int shift = m_color == P010 ? 10 : 16;
+		int shift2 = shift - 8;
 
+		for (j = 0; j < height; j++) 
+		{
+			cur = line;
+			for (i = 0; i < width; i++) 
+			{
+				c = ((unsigned short*)y)[j*width + i];
+				d = ((unsigned short*)misc)[(j>>1)*width + (i & 0xFFFFFFFE)]; // for u
+				e = ((unsigned short*)misc)[(j>>1)*width + (i & 0xFFFFFFFE) + 1]; // for v
+
+				c = c - (16 << shift2);
+				d = d - (128 << shift2);
+				e = e - (128 << shift2);
+
+				(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> shift); cur++;
+				(*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> shift); cur++;
+				(*cur) = clip((298 * c + 516 * d + (128 << 2)) >> shift); cur += 2;
+			}
+			line += t_width << 2;
+		}
+	}
+	else if (m_color == P210 || m_color == P210MSB)
+	{
+		int shift = m_color == P210 ? 10 : 16;
+		int shift2 = shift - 8;
+
+		for (j = 0; j < height; j++) {
+            cur = line;
+            for (i = 0; i < width; i++) {
+
+				c = ((unsigned short*)y)[j*width + i];
+				d = ((unsigned short*)misc)[j*width + (i & 0xFFFFFFFE)]; // for u
+				e = ((unsigned short*)misc)[j*width + (i & 0xFFFFFFFE) + 1]; // for v
+
+				c = c - (16 << shift2);
+				d = d - (128 << shift2);
+				e = e - (128 << shift2);
+
+				(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> shift); cur++;
+                (*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> shift); cur++;
+                (*cur) = clip((298 * c + 516 * d + (128 << 2)) >> shift); cur += 2;
+            }
+            line += t_width << 2;
+        }
+    }
+	else if (m_color == Y210 || m_color == Y210MSB || m_color == Y216)
+	{
+		int shift = 0;
+		switch (m_color)
+		{
+		case Y210: shift = 10;  break;
+		case Y210MSB: shift = 16; break;
+		case Y216: shift = 16;  break;
+		}
+
+		int shift2 = shift-8;
+
+		for (j = 0; j < height; j++) {
+			cur = line;
+			for (i = 0; i < width; i++) {
+
+				c = ((unsigned short*)misc)[j*width*2 + i*2];
+				d = ((unsigned short*)misc)[j*width*2 + (i & 0xFFFFFFFE)*2+1]; // for u
+				e = ((unsigned short*)misc)[j*width*2 + (i & 0xFFFFFFFE)*2 + 3]; // for v
+
+				c = c - (16 << shift2);
+				d = d - (128 << shift2);
+				e = e - (128 << shift2);
+
+				(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> shift); cur++;
+				(*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> shift); cur++;
+				(*cur) = clip((298 * c + 516 * d + (128 << 2)) >> shift); cur += 2;
+			}
+			line += t_width << 2;
+		}
+	}
+	else if (m_color == Y410) 
+	{
+		for (j = 0; j < height; j++) 
+		{
+			cur = line;
+			for (i = 0; i < width; i++) 
+			{
+				Y410Pack pack = ((Y410Pack*)misc)[j*width + i];
+				c = pack.Y;
+				d = pack.U; // for u
+				e = pack.V; // for v
+
+				c = c - (16 << 2);
+				d = d - (128 << 2);
+				e = e - (128 << 2);
+
+				(*cur) = clip((298 * c + 409 * e + (128 << 2)) >> 10); cur++;
+				(*cur) = clip((298 * c - 100 * d - 208 * e + (128 << 2)) >> 10); cur++;
+				(*cur) = clip((298 * c + 516 * d + (128 << 2)) >> 10); cur += 2;
+			}
+			line += t_width << 2;
+		}
+	}
 	else if (m_color == RGB32 || m_color == RGB24 || m_color == RGB16) {
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
 				if (m_color == RGB32) {
-					r = misc[(j*width+i)*4+2];
+					r = misc[(j*width+i)*4  ];
 					g = misc[(j*width+i)*4+1];
-					b = misc[(j*width+i)*4+0];
+					b = misc[(j*width+i)*4+2];
 				}
 				else if (m_color == RGB24) {
-					r = misc[(j*width+i)*3+2];
+					r = misc[(j*width+i)*3  ];
 					g = misc[(j*width+i)*3+1];
-					b = misc[(j*width+i)*3+0];
+					b = misc[(j*width+i)*3+2];
 				}
 				else {
 					rgb16 = (short*)misc;
@@ -1071,6 +1256,11 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
 			case 'q':
 			case 'Q':
 				OnSizeChange(ID_SIZE_QCIF);
+				return TRUE;
+
+			case 'v':
+			case 'V':
+				OnSizeChange(ID_SIZE_VGA);
 				return TRUE;
 
 			case 'g':

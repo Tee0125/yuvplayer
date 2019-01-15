@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 한국어(대한민국) resources
+// Korean (Korea) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -182,6 +182,7 @@ BEGIN
     END
     POPUP "&Size"
     BEGIN
+        MENUITEM "4K (3840x2160)",              ID_SIZE_4K
         MENUITEM "1080P (1920x1080)",           ID_SIZE_HD
         MENUITEM "720P  (1280x720)",            ID_SIZE_SD
         MENUITEM "&VGA   (640x480)",            ID_SIZE_VGA
@@ -208,12 +209,22 @@ BEGIN
         MENUITEM "YUV",                         ID_COLOR_PACKEDYUV444
         MENUITEM "&UYVY",                       ID_COLOR_UYVY
         MENUITEM "YUY&V",                       ID_COLOR_YUYV
+	    MENUITEM "&AYUV",                       ID_COLOR_AYUV
         MENUITEM "NV12",                        ID_COLOR_NV12
         MENUITEM "NV21",                        ID_COLOR_NV21
         MENUITEM SEPARATOR
         MENUITEM "RGB32",                       ID_COLOR_RGB32
         MENUITEM "RGB24",                       ID_COLOR_RGB24
         MENUITEM "RGB16",                       ID_COLOR_RGB16
+        MENUITEM SEPARATOR
+        MENUITEM "P010",                        ID_COLOR_P010
+        MENUITEM "P010 MSB",                    ID_COLOR_P010MSB
+        MENUITEM "P210",                        ID_COLOR_P210
+        MENUITEM "P210 MSB",                     ID_COLOR_P210MSB
+        MENUITEM "Y210",                        ID_COLOR_Y210
+        MENUITEM "Y210 MSB",                    ID_COLOR_Y210MSB
+        MENUITEM "Y216",                        ID_COLOR_Y216
+        MENUITEM "Y410",                        ID_COLOR_Y410
     END
     POPUP "&Zoom"
     BEGIN
@@ -284,7 +295,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
 
-#endif    // 한국어(대한민국) resources
+#endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
