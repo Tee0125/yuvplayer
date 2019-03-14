@@ -72,7 +72,8 @@
 #define ID_ZOOM_11                      40042
 #define ID_ZOOM_12                      40043
 #define ID_ZOOM_14                      40044
-#define ID_ZOOM_END                     40044
+#define ID_ZOOM_CUSTOM                  40045
+#define ID_ZOOM_END                     40045
 #define ID_SEGMENT_START                40060
 #define ID_SEGMENT_64X64                40060
 #define ID_SEGMENT_32X32                40061
@@ -84,7 +85,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32835
+#define _APS_NEXT_COMMAND_VALUE         32836
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

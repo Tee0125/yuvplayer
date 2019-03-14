@@ -247,7 +247,7 @@ void COpenGLView::LoadSegmentTexture(unsigned char* segment)
 	else{
 		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, t_width, t_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, segment );
 		loaded[1] = TRUE;
-	}
+	}        
 	Invalidate(NULL);
 }
 

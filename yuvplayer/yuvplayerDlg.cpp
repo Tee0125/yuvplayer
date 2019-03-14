@@ -108,6 +108,7 @@ static const size_info_t size_info[] = {
 	{ L"3840x2160", 3840, 2160, ID_SIZE_CUSTOM },
 	{ L"1920x1088", 1920, 1088, ID_SIZE_CUSTOM },
 	{ L"2560x1600", 2560, 1600, ID_SIZE_CUSTOM },
+	{ L"7680x4320", 7680, 4320, ID_SIZE_CUSTOM },
 
 	// end delimiter
 	{ NULL, 0, 0, 0 }
@@ -448,6 +449,26 @@ void CyuvplayerDlg::OnZoom(UINT nID )
 			menu->CheckMenuItem( ID_ZOOM_14, MF_CHECKED);
 			ratio = 0.25;
 			break;
+		case ID_ZOOM_CUSTOM:
+		{
+			menu->CheckMenuItem(ID_ZOOM_CUSTOM, MF_CHECKED);
+			
+			CGoDialog* GoDlg = new CGoDialog;
+
+			GoDlg->frame_no = 1/ratio;
+			GoDlg->DoModal();
+			float x = GoDlg->frame_no;
+			
+			if (x > 0)
+			{
+				ratio = 1 / x;
+				CString xs;
+				xs.Format(L"custom 1:%d", GoDlg->frame_no);
+				menu->ModifyMenuW(ID_ZOOM_CUSTOM, MF_BYCOMMAND, ID_ZOOM_CUSTOM, xs);
+			}
+			delete GoDlg;
+		}
+		break;
 	}
 	Resize( width, height );
 
@@ -695,7 +716,7 @@ void CyuvplayerDlg::LoadFrame(void)
 		_read( fd, v, frame_size_uv );
 	}
 
-	yuv2rgb();
+	yuv2rgb();	
 	OpenGLView->LoadTexture(rgba);
 
 	m_slider.SetPos(cur);

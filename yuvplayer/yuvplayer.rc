@@ -223,6 +223,7 @@ BEGIN
         MENUITEM "&1:1",                        ID_ZOOM_11, CHECKED
         MENUITEM "1:2",                         ID_ZOOM_12
         MENUITEM "1:4",                         ID_ZOOM_14
+        MENUITEM "custom",                      ID_ZOOM_CUSTOM
     END
     POPUP "Segment"
     BEGIN
