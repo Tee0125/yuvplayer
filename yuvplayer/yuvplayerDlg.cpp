@@ -304,7 +304,7 @@ void CyuvplayerDlg::Resize(int width, int height)
 	// reset alpha value to 255
 	memset( rgba, 255, sizeof(unsigned char)*t_width*t_height*4 );
 
-	// used for NV12, NV21, UYVY, RGB32, RGB24, RGB16
+	// used for NV12, NV21, UYVY, RGB32, RGB24, RGB16, RGBBP
 	misc = new unsigned char[width*height*4];
 	
 	UpdateParameter();
@@ -607,6 +607,11 @@ void CyuvplayerDlg::OnColor(UINT nID )
 			menu->CheckMenuItem( ID_COLOR_RGB16,   MF_CHECKED);
 			m_color = RGB16;
 			break;
+
+        case ID_COLOR_RGBP:
+            menu->CheckMenuItem(ID_COLOR_RGBP, MF_CHECKED);
+            m_color = RGBP;
+            break;
 		case ID_COLOR_P010:
 			menu->CheckMenuItem(ID_COLOR_P010, MF_CHECKED);
 			m_color = P010;
@@ -685,7 +690,7 @@ void CyuvplayerDlg::UpdateParameter()
 
 	if (m_color == RGB32 || m_color == Y210 || m_color == Y210MSB || m_color == Y216 || m_color == Y410 || m_color == AYUV)
 		frame_size = frame_size_y*4;
-	else if (m_color == RGB24)
+	else if (m_color == RGB24 || m_color == RGBP)
 		frame_size = frame_size_y*3;
 	else if (m_color == RGB16)
 		frame_size = frame_size_y*2;
@@ -717,7 +722,7 @@ void CyuvplayerDlg::LoadFrame(void)
 	if( m_color == RGB32 || m_color == Y210 || m_color == Y210MSB || m_color == Y216 || m_color == Y410 || m_color == AYUV)
 		_read( fd, misc, frame_size_y*4 );
 
-	else if( m_color == RGB24 )
+	else if( m_color == RGB24 || m_color == RGBP)
 		_read( fd, misc, frame_size_y*3 );
 	
 	else if( m_color == RGB16 )
@@ -1046,7 +1051,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 			line += t_width << 2;
 		}
 	}
-	else if (m_color == RGB32 || m_color == RGB24 || m_color == RGB16) {
+	else if (m_color == RGB32 || m_color == RGB24 || m_color == RGB16 || m_color == RGBP) {
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
@@ -1060,13 +1065,18 @@ void CyuvplayerDlg::yuv2rgb(void)
 					g = misc[(j*width+i)*3+1];
 					b = misc[(j*width+i)*3+2];
 				}
-				else {
-					rgb16 = (short*)misc;
+                else if (m_color == RGB16) {
+                    rgb16 = (short*)misc;
 
-					r = ((rgb16[j*width+i] >> 11)&0x1F) << 3;
-					g = ((rgb16[j*width+i] >> 5 )&0x3F) << 2;
-					b = ((rgb16[j*width+i]      )&0x1F) << 3;
-				}
+                    r = ((rgb16[j*width + i] >> 11) & 0x1F) << 3;
+                    g = ((rgb16[j*width + i] >> 5) & 0x3F) << 2;
+                    b = ((rgb16[j*width + i]) & 0x1F) << 3;
+                }
+				else {
+                    r = misc[(j*width + i) ];
+                    g = misc[(j*width + i) + width*height];
+                    b = misc[(j*width + i) + 2*width*height];
+                }
 
 				(*cur) = r; cur++;
 				(*cur) = g; cur++;

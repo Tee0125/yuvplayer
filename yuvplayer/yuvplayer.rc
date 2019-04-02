@@ -209,18 +209,19 @@ BEGIN
         MENUITEM "YUV",                         ID_COLOR_PACKEDYUV444
         MENUITEM "&UYVY",                       ID_COLOR_UYVY
         MENUITEM "YUY&V",                       ID_COLOR_YUYV
-	    MENUITEM "&AYUV",                       ID_COLOR_AYUV
+        MENUITEM "&AYUV",                       ID_COLOR_AYUV
         MENUITEM "NV12",                        ID_COLOR_NV12
         MENUITEM "NV21",                        ID_COLOR_NV21
         MENUITEM SEPARATOR
         MENUITEM "RGB32",                       ID_COLOR_RGB32
         MENUITEM "RGB24",                       ID_COLOR_RGB24
         MENUITEM "RGB16",                       ID_COLOR_RGB16
+        MENUITEM "RGBP",                        ID_COLOR_RGBP
         MENUITEM SEPARATOR
         MENUITEM "P010",                        ID_COLOR_P010
         MENUITEM "P010 MSB",                    ID_COLOR_P010MSB
         MENUITEM "P210",                        ID_COLOR_P210
-        MENUITEM "P210 MSB",                     ID_COLOR_P210MSB
+        MENUITEM "P210 MSB",                    ID_COLOR_P210MSB
         MENUITEM "Y210",                        ID_COLOR_Y210
         MENUITEM "Y210 MSB",                    ID_COLOR_Y210MSB
         MENUITEM "Y216",                        ID_COLOR_Y216
