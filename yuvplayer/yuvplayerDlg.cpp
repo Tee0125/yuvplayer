@@ -656,12 +656,8 @@ void CyuvplayerDlg::UpdateParameter()
 
 	if(m_color == YUV422P10LE)
 	{
-		int linepitch = width * 8 / 3 / 4;
-		frame_size = linepitch*height*4;
-		if (width == 1280 && height==720)
-		{
-			frame_size = 2490368;
-		}
+#define GET_PACKET_SIZE(w, h) (((w + 47) / 48) * 48 * h * 8 / 3)
+		frame_size = GET_PACKET_SIZE(width, height);
 	}
 	count = (int)(size / frame_size);
 
@@ -931,9 +927,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 		}	
 	}
 	else if(m_color == YUV422P10LE)	{
-		unsigned int *buffer = (unsigned int *)misc;
-		int linePitch = width;
-		if (width == 1280)linePitch = 1296;
+		unsigned int *buffer = (unsigned int *)misc;		
+#define GET_linePitch(w) (((w + 47) / 48) * 48)
+		int linePitch = GET_linePitch(width);
 		for(int h=0;h<(height);h++)
 		{
 			cur = line;
