@@ -658,6 +658,10 @@ void CyuvplayerDlg::UpdateParameter()
 	{
 		int linepitch = width * 8 / 3 / 4;
 		frame_size = linepitch*height*4;
+		if (width == 1280 && height==720)
+		{
+			frame_size = 2490368;
+		}
 	}
 	count = (int)(size / frame_size);
 
@@ -928,10 +932,12 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 	else if(m_color == YUV422P10LE)	{
 		unsigned int *buffer = (unsigned int *)misc;
+		int linePitch = width;
+		if (width == 1280)linePitch = 1296;
 		for(int h=0;h<(height);h++)
 		{
 			cur = line;
-			for (int i = 0; i < width / 6; i++)
+			for (int i = 0; i < linePitch / 6; i++)
 			{
 				unsigned short U1_10b = (0x3FF & buffer[0]);	//	printf("U1 %d\n", U1_10b);
 				unsigned short Y1_10b = (0xFF300 & buffer[0]) >> 10; //	printf("Y1 %d\n", Y1_10b);
