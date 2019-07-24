@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Korean (Korea) resources
+// º«Óï(º«¹ú) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -193,6 +193,9 @@ BEGIN
         MENUITEM "&QCIF    (176x144)",          ID_SIZE_QCIF
         MENUITEM "SMALL (192x256)",             ID_SIZE_192X256
         MENUITEM SEPARATOR
+        MENUITEM "960x540",                     ID_SIZE_960X540
+        MENUITEM "480x270",                     ID_SIZE_480X270
+        MENUITEM SEPARATOR
         MENUITEM "C&ustom",                     ID_SIZE_CUSTOM
     END
     POPUP "&Color"
@@ -286,7 +289,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
 
-#endif    // Korean (Korea) resources
+#endif    // º«Óï(º«¹ú) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

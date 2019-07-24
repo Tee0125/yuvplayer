@@ -105,6 +105,9 @@ static const size_info_t size_info[] = {
 
 	{ L"192x256", 192, 256, ID_SIZE_192X256 },
 
+	{ L"960x540", 960, 540, ID_SIZE_960X540 },
+	{ L"480x270", 480, 270, ID_SIZE_480X270 },
+
 	{ L"3840x2160", 3840, 2160, ID_SIZE_CUSTOM },
 	{ L"1920x1088", 1920, 1088, ID_SIZE_CUSTOM },
 	{ L"2560x1600", 2560, 1600, ID_SIZE_CUSTOM },
@@ -401,6 +404,14 @@ void CyuvplayerDlg::OnSizeChange(UINT nID )
         case ID_SIZE_192X256:
 			menu->CheckMenuItem( ID_SIZE_192X256,	MF_CHECKED);
 			Resize( 192, 256 );
+			return;
+		case ID_SIZE_480X270:
+			menu->CheckMenuItem(ID_SIZE_480X270, MF_CHECKED);
+			Resize(480, 270);
+			return;
+		case ID_SIZE_960X540:
+			menu->CheckMenuItem(ID_SIZE_960X540, MF_CHECKED);
+			Resize(960,540);
 			return;
 
 	}
