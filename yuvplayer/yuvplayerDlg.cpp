@@ -132,10 +132,13 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	y = u = v = rgba = misc = segment = NULL;
+	segment = NULL;
+    memset(&fb, 0, sizeof(fb));
+    memset(&fbSecondary, 0, sizeof(fbSecondary));
 	m_color = YUV420;
 
 	fd = -1;
+    fdSecondary = -1;
 	ratio = 1.0;
 
 	segment_option = 0;
@@ -144,6 +147,9 @@ CyuvplayerDlg::CyuvplayerDlg(CWnd* pParent /*=NULL*/)
 	started = FALSE;
 
 	wsprintf(filename, L"%s", L"YUV player");
+
+    primaryFileSize = 0;
+    isShowingDifference = false;
 
 	OpenGLView = new COpenGLView;
 }
@@ -190,6 +196,8 @@ BEGIN_MESSAGE_MAP(CyuvplayerDlg, CDialog)
 	ON_COMMAND(ID_CMENU_SAVE_YUV422, &CyuvplayerDlg::OnCmenuSaveYuv422)
 	ON_COMMAND(ID_CMENU_SAVE_YUV420, &CyuvplayerDlg::OnCmenuSaveYuv420)
 	ON_COMMAND(ID_CMENU_SAVE_RGB, &CyuvplayerDlg::OnCmenuSaveRgb)
+    ON_COMMAND(ID_OPEN_SECONDARY, &CyuvplayerDlg::OnOpenSecondary)
+    ON_COMMAND(ID_VIEW_SHOWDIFFERENCE, &CyuvplayerDlg::OnViewShowdifference)
 END_MESSAGE_MAP()
 
 
@@ -227,8 +235,17 @@ BOOL CyuvplayerDlg::OnInitDialog()
 
 	Resize( DEFAULT_WIDTH, DEFAULT_HEIGHT );
 
-	if( __argc == 2 )	
-		FileOpen( __targv[1] );
+    if (__argc == 2)
+    {
+        if (fdSecondary>-1)
+        {
+            _close(fdSecondary);
+            fdSecondary = -1;
+            isShowingDifference = false;
+            menu->CheckMenuItem(ID_VIEW_SHOWDIFFERENCE, MF_UNCHECKED);
+        }
+        FileOpen(__targv[1], fd);
+    }
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -284,29 +301,15 @@ void CyuvplayerDlg::Resize(int width, int height)
 	for( t_width = 2  ; t_width  < width  ; t_width  *= 2 );
 	for( t_height = 2 ; t_height < height ; t_height *= 2 );
 
-	if( y != NULL ) delete y;
-	if( u != NULL ) delete u;
-	if( v != NULL ) delete v;
+    ReallocateMem(fb);
+    ReallocateMem(fbSecondary);
 
-	if( rgba != NULL ) delete rgba;
-	if( misc != NULL ) delete misc;
-	
-	if( segment != NULL) delete segment;
-
-	y = new unsigned char[width*height*2];
-	u = new unsigned char[width*height*2];
-	v = new unsigned char[width*height*2];
-	
-	rgba    = new unsigned char[t_width*t_height*4];
-	
+    if (segment != NULL) delete segment;
     segment = new unsigned char[t_width*t_height*4];
 	
 	// reset alpha value to 255
-	memset( rgba, 255, sizeof(unsigned char)*t_width*t_height*4 );
+	memset( fb.rgba, 255, sizeof(unsigned char)*t_width*t_height*4 );
 
-	// used for NV12, NV21, UYVY, RGB32, RGB24, RGB16, RGBBP
-	misc = new unsigned char[width*height*4];
-	
 	UpdateParameter();
 	OpenGLView->SetParam( t_width, t_height, ratio);
 	
@@ -354,13 +357,46 @@ void CyuvplayerDlg::OnOpen()
 	if( IDOK != dlg.DoModal() )
 		return;	
 
-	CString cpathname = dlg.GetPathName();
-	wchar_t* path = cpathname.GetBuffer(0);
+    if (fdSecondary>-1)
+    {
+        _close(fdSecondary);
+        fdSecondary = -1;
+        isShowingDifference = false;
+        menu->CheckMenuItem(ID_VIEW_SHOWDIFFERENCE, MF_UNCHECKED);
+    }
+	FileOpen(dlg.GetPathName(), fd);
 
-	FileOpen( path );
 
-	cpathname.ReleaseBuffer();
+    CFileStatus filestatus;
+    if (CFile::GetStatus(dlg.GetPathName(), filestatus))
+    {
+        primaryFileSize = filestatus.m_size;
+    }
 }
+
+void CyuvplayerDlg::OnOpenSecondary()
+{
+    // TODO: Add your command handler code here
+    CFileDialog	dlg(
+        TRUE, _T("YUV"), NULL,
+        OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_ALLOWMULTISELECT,
+        _T("Image Files (YUV, RAW, IMG, ...)|*.YUV;*.RAW;*.IMG|")
+    );
+
+    if (IDOK != dlg.DoModal())
+        return;
+
+    CFileStatus filestatus;
+    if (primaryFileSize!=0 && CFile::GetStatus(dlg.GetPathName(), filestatus) && primaryFileSize == filestatus.m_size)
+    {
+        FileOpen(dlg.GetPathName(), fdSecondary);
+    }
+    else
+    {
+        AfxMessageBox(_T("Secondary file should be of exactly same size and format as primary. Primary file should be already loaded"));
+    }
+}
+
 
 void CyuvplayerDlg::OnFileReload()
 {
@@ -705,59 +741,76 @@ void CyuvplayerDlg::UpdateParameter()
 	m_slider.SetTicFreq(1);
 }
 
-void CyuvplayerDlg::LoadFrame(void)
+void CyuvplayerDlg::LoadFrame()
+{
+    CString caption;
+
+    LoadFrame(fd, fb);
+
+    if (fdSecondary > -1)
+    {
+        LoadFrame(fdSecondary,fbSecondary);
+        CalcDifIfNeeded();
+        caption.Format(L"%s(+%s) - frame: %d/%d", filename, filenameSecondary, cur + 1, count);
+    }
+    else
+    {
+        caption.Format(L"%s - frame: %d/%d", filename, cur + 1, count);
+    }
+
+    yuv2rgb();
+    OpenGLView->LoadTexture(fb.rgba);
+
+    m_slider.SetPos(cur);
+    m_slider.UpdateData(FALSE);
+
+    SetWindowText(caption);
+}
+
+void CyuvplayerDlg::LoadFrame(int fileDesc, const FrameBuffer& frameBuf)
 {
 
-	wchar_t buf[1024];
-	wsprintf( buf, L"%s - frame: %d/%d", filename, cur+1, count );
-	SetWindowText(buf);
-
-	if( fd < 0 ){
+	if( fileDesc < 0 ){
 		m_slider.SetPos(0);
 		return;
 	}
 
-	_lseeki64( fd, (__int64)cur*(__int64)frame_size, SEEK_SET );
+	_lseeki64( fileDesc, (__int64)cur*(__int64)frame_size, SEEK_SET );
 
 	if( m_color == RGB32 || m_color == Y210 || m_color == Y210MSB || m_color == Y216 || m_color == Y410 || m_color == AYUV)
-		_read( fd, misc, frame_size_y*4 );
+		_read( fileDesc, frameBuf.misc, frame_size_y*4 );
 
 	else if( m_color == RGB24 || m_color == RGBP)
-		_read( fd, misc, frame_size_y*3 );
+		_read( fileDesc, frameBuf.misc, frame_size_y*3 );
 	
 	else if( m_color == RGB16 )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fileDesc, frameBuf.misc, frame_size_y*2 );
 
 	else if( m_color == UYVY )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fileDesc, frameBuf.misc, frame_size_y*2 );
 
 	else if( m_color == YUYV )
-		_read( fd, misc, frame_size_y*2 );
+		_read( fileDesc, frameBuf.misc, frame_size_y*2 );
 
 	else if( m_color == NV12 || m_color == NV21)
 	{
-		_read( fd, y,    frame_size_y );
-		_read( fd, misc, frame_size_y/2 );
+		_read( fileDesc, frameBuf.y,    frame_size_y );
+		_read( fileDesc, frameBuf.misc, frame_size_y/2 );
 	}
     else if (m_color == P010 || m_color == P010MSB || m_color == P210 || m_color == P210MSB)
     {
-        _read(fd, y, frame_size_y);
-        _read(fd, misc, frame_size_uv);
+        _read(fileDesc, frameBuf.y, frame_size_y);
+        _read(fileDesc, frameBuf.misc, frame_size_uv);
     }
     else if ( m_color == PACKED_YUV444 )
-        _read( fd, misc, frame_size );
+        _read( fileDesc, frameBuf.misc, frame_size );
 	else
 	{
-		_read( fd, y, frame_size_y );
-		_read( fd, u, frame_size_uv );
-		_read( fd, v, frame_size_uv );
+		_read( fileDesc, frameBuf.y, frame_size_y );
+		_read( fileDesc, frameBuf.u, frame_size_uv );
+		_read( fileDesc, frameBuf.v, frame_size_uv );
 	}
 
-	yuv2rgb();
-	OpenGLView->LoadTexture(rgba);
-
-	m_slider.SetPos(cur);
-	m_slider.UpdateData(FALSE);
 }
 
 #define clip(var) ((var>=255)?255:(var<=0)?0:var)
@@ -771,7 +824,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 
 	int r, g, b;
 	
-	unsigned char* line = rgba;
+	unsigned char* line = fb.rgba;
 	unsigned char* cur;
 
 	short* rgb16;
@@ -780,9 +833,9 @@ void CyuvplayerDlg::yuv2rgb(void)
         for( j = 0 ; j < height ; j++ ){
             cur = line;
             for( i = 0 ; i < width ; i++ ){
-                c = misc[(j*width+i)*3    ] - 16;
-                d = misc[(j*width+i)*3 + 1] - 128;
-                e = misc[(j*width+i)*3 + 2] - 128;
+                c = fb.misc[(j*width+i)*3    ] - 16;
+                d = fb.misc[(j*width+i)*3 + 1] - 128;
+                e = fb.misc[(j*width+i)*3 + 2] - 128;
 
                 (*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
                 (*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
@@ -795,9 +848,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
-				c = y[j*width+i] - 16;
-				d = u[j*width+i] - 128;
-				e = v[j*width+i] - 128;
+				c = fb.y[j*width+i] - 16;
+				d = fb.u[j*width+i] - 128;
+				e = fb.v[j*width+i] - 128;
 
 				(*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
 				(*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
@@ -812,9 +865,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
-				c = y[j*width+i] - 16;
-				d = u[j*stride_uv+(i>>1)] - 128;
-				e = v[j*stride_uv+(i>>1)] - 128;
+				c = fb.y[j*width+i] - 16;
+				d = fb.u[j*stride_uv+(i>>1)] - 128;
+				e = fb.v[j*stride_uv+(i>>1)] - 128;
 
 				(*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
 				(*cur) = clip(( 298 * c - 100 * d - 208 * e + 128) >> 8);cur++;
@@ -825,7 +878,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 
 	else if( m_color == UYVY ){
-		unsigned char* t = misc;
+		unsigned char* t = fb.misc;
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i+=2 ){
@@ -849,7 +902,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 
 	else if( m_color == YUYV ){
-		unsigned char* t = misc;
+		unsigned char* t = fb.misc;
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i+=2 ){
@@ -872,14 +925,14 @@ void CyuvplayerDlg::yuv2rgb(void)
 		}
 	}
 	else if (m_color == AYUV) {
-		unsigned char* t = misc;
+		unsigned char* t = fb.misc;
 		for (j = 0; j < height; j++) {
 			cur = line;
 			for (i = 0; i < width; i++) 
 			{
-				c = misc[j*width * 4 + i*4 +2] - 16;    // Y
-				d = misc[j*width * 4 + i*4 + 1] - 128;   // U
-				e = misc[j*width * 4 + i*4] - 128;   // V
+				c = fb.misc[j*width * 4 + i*4 +2] - 16;    // Y
+				d = fb.misc[j*width * 4 + i*4 + 1] - 128;   // U
+				e = fb.misc[j*width * 4 + i*4] - 128;   // V
 
 				(*cur) = clip((298 * c + 409 * e + 128) >> 8); cur++;
 				(*cur) = clip((298 * c - 100 * d - 208 * e + 128) >> 8); cur++;
@@ -894,22 +947,22 @@ void CyuvplayerDlg::yuv2rgb(void)
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
-				c = y[j*width+i] - 16;
+				c = fb.y[j*width+i] - 16;
 
 				if (m_color == YUV420)
 				{
-					d = u[(j>>1)*stride_uv+(i>>1)] - 128;
-					e = v[(j>>1)*stride_uv+(i>>1)] - 128;
+					d = fb.u[(j>>1)*stride_uv+(i>>1)] - 128;
+					e = fb.v[(j>>1)*stride_uv+(i>>1)] - 128;
 				}
 				else if (m_color == NV12)
 				{
-					d = misc[(j>>1)*width+(i>>1<<1)  ] - 128;
-					e = misc[(j>>1)*width+(i>>1<<1)+1] - 128;
+					d = fb.misc[(j>>1)*width+(i>>1<<1)  ] - 128;
+					e = fb.misc[(j>>1)*width+(i>>1<<1)+1] - 128;
 				}
 				else // if (m_color == NV21)
 				{
-					d = misc[(j>>1)*width+(i>>1<<1)+1] - 128;
-					e = misc[(j>>1)*width+(i>>1<<1)  ] - 128;
+					d = fb.misc[(j>>1)*width+(i>>1<<1)+1] - 128;
+					e = fb.misc[(j>>1)*width+(i>>1<<1)  ] - 128;
 				}
 
 				(*cur) = clip(( 298 * c           + 409 * e + 128) >> 8);cur++;
@@ -926,15 +979,15 @@ void CyuvplayerDlg::yuv2rgb(void)
 
                 if (m_color == YUV420_10BE)
                 {
-                    c = (y[j*width*2 +  i*2] << 8) | y[j*width*2 +  i*2 + 1];
-                    d = (u[(j>>1)*width+(i>>1<<1)  ] << 8) | u[(j>>1)*width+(i>>1<<1)+1];
-                    e = (v[(j>>1)*width+(i>>1<<1)  ] << 8) | v[(j>>1)*width+(i>>1<<1)+1];
+                    c = (fb.y[j*width*2 +  i*2] << 8) | fb.y[j*width*2 +  i*2 + 1];
+                    d = (fb.u[(j>>1)*width+(i>>1<<1)  ] << 8) | fb.u[(j>>1)*width+(i>>1<<1)+1];
+                    e = (fb.v[(j>>1)*width+(i>>1<<1)  ] << 8) | fb.v[(j>>1)*width+(i>>1<<1)+1];
                 }
                 else
                 {
-                    c = (y[j*width*2 +  i*2 + 1] << 8)  | y[j*width*2 +  i*2];
-                    d = (u[(j>>1)*width+(i>>1<<1)+1] << 8)  | u[(j>>1)*width+(i>>1<<1)  ];
-                    e = (v[(j>>1)*width+(i>>1<<1)+1] << 8)  | v[(j>>1)*width+(i>>1<<1)  ];
+                    c = (fb.y[j*width*2 +  i*2 + 1] << 8)  | fb.y[j*width*2 +  i*2];
+                    d = (fb.u[(j>>1)*width+(i>>1<<1)+1] << 8)  | fb.u[(j>>1)*width+(i>>1<<1)  ];
+                    e = (fb.v[(j>>1)*width+(i>>1<<1)+1] << 8)  | fb.v[(j>>1)*width+(i>>1<<1)  ];
                 }
 
 				c = c - (16<<2);
@@ -958,9 +1011,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 			cur = line;
 			for (i = 0; i < width; i++) 
 			{
-				c = ((unsigned short*)y)[j*width + i];
-				d = ((unsigned short*)misc)[(j>>1)*width + (i & 0xFFFFFFFE)]; // for u
-				e = ((unsigned short*)misc)[(j>>1)*width + (i & 0xFFFFFFFE) + 1]; // for v
+				c = ((unsigned short*)fb.y)[j*width + i];
+				d = ((unsigned short*)fb.misc)[(j>>1)*width + (i & 0xFFFFFFFE)]; // for fb.u
+				e = ((unsigned short*)fb.misc)[(j>>1)*width + (i & 0xFFFFFFFE) + 1]; // for fb.v
 
 				c = c - (16 << shift2);
 				d = d - (128 << shift2);
@@ -982,9 +1035,9 @@ void CyuvplayerDlg::yuv2rgb(void)
             cur = line;
             for (i = 0; i < width; i++) {
 
-				c = ((unsigned short*)y)[j*width + i];
-				d = ((unsigned short*)misc)[j*width + (i & 0xFFFFFFFE)]; // for u
-				e = ((unsigned short*)misc)[j*width + (i & 0xFFFFFFFE) + 1]; // for v
+				c = ((unsigned short*)fb.y)[j*width + i];
+				d = ((unsigned short*)fb.misc)[j*width + (i & 0xFFFFFFFE)]; // for fb.u
+				e = ((unsigned short*)fb.misc)[j*width + (i & 0xFFFFFFFE) + 1]; // for fb.v
 
 				c = c - (16 << shift2);
 				d = d - (128 << shift2);
@@ -1013,9 +1066,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 			cur = line;
 			for (i = 0; i < width; i++) {
 
-				c = ((unsigned short*)misc)[j*width*2 + i*2];
-				d = ((unsigned short*)misc)[j*width*2 + (i & 0xFFFFFFFE)*2+1]; // for u
-				e = ((unsigned short*)misc)[j*width*2 + (i & 0xFFFFFFFE)*2 + 3]; // for v
+				c = ((unsigned short*)fb.misc)[j*width*2 + i*2];
+				d = ((unsigned short*)fb.misc)[j*width*2 + (i & 0xFFFFFFFE)*2+1]; // for fb.u
+				e = ((unsigned short*)fb.misc)[j*width*2 + (i & 0xFFFFFFFE)*2 + 3]; // for fb.v
 
 				c = c - (16 << shift2);
 				d = d - (128 << shift2);
@@ -1035,10 +1088,10 @@ void CyuvplayerDlg::yuv2rgb(void)
 			cur = line;
 			for (i = 0; i < width; i++) 
 			{
-				Y410Pack pack = ((Y410Pack*)misc)[j*width + i];
+				Y410Pack pack = ((Y410Pack*)fb.misc)[j*width + i];
 				c = pack.Y;
-				d = pack.U; // for u
-				e = pack.V; // for v
+				d = pack.U; // for fb.u
+				e = pack.V; // for fb.v
 
 				c = c - (16 << 2);
 				d = d - (128 << 2);
@@ -1056,26 +1109,26 @@ void CyuvplayerDlg::yuv2rgb(void)
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
 				if (m_color == RGB32) {
-					r = misc[(j*width+i)*4  ];
-					g = misc[(j*width+i)*4+1];
-					b = misc[(j*width+i)*4+2];
+					r = fb.misc[(j*width+i)*4  ];
+					g = fb.misc[(j*width+i)*4+1];
+					b = fb.misc[(j*width+i)*4+2];
 				}
 				else if (m_color == RGB24) {
-					r = misc[(j*width+i)*3  ];
-					g = misc[(j*width+i)*3+1];
-					b = misc[(j*width+i)*3+2];
+					r = fb.misc[(j*width+i)*3  ];
+					g = fb.misc[(j*width+i)*3+1];
+					b = fb.misc[(j*width+i)*3+2];
 				}
                 else if (m_color == RGB16) {
-                    rgb16 = (short*)misc;
+                    rgb16 = (short*)fb.misc;
 
                     r = ((rgb16[j*width + i] >> 11) & 0x1F) << 3;
                     g = ((rgb16[j*width + i] >> 5) & 0x3F) << 2;
                     b = ((rgb16[j*width + i]) & 0x1F) << 3;
                 }
 				else {
-                    r = misc[(j*width + i) ];
-                    g = misc[(j*width + i) + width*height];
-                    b = misc[(j*width + i) + 2*width*height];
+                    r = fb.misc[(j*width + i) ];
+                    g = fb.misc[(j*width + i) + width*height];
+                    b = fb.misc[(j*width + i) + 2*width*height];
                 }
 
 				(*cur) = r; cur++;
@@ -1090,9 +1143,9 @@ void CyuvplayerDlg::yuv2rgb(void)
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
-				(*cur) = y[j*width+i]; cur++;
-				(*cur) = y[j*width+i]; cur++;
-				(*cur) = y[j*width+i]; cur+=2;
+				(*cur) = fb.y[j*width+i]; cur++;
+				(*cur) = fb.y[j*width+i]; cur++;
+				(*cur) = fb.y[j*width+i]; cur+=2;
 			}
 			line += t_width<<2;
 		}	
@@ -1268,7 +1321,7 @@ BOOL CyuvplayerDlg::PreTranslateMessage(MSG* pMsg)
 				OnSizeChange(ID_SIZE_QCIF);
 				return TRUE;
 
-			case 'v':
+			case 'fb.v':
 			case 'V':
 				OnSizeChange(ID_SIZE_VGA);
 				return TRUE;
@@ -1295,20 +1348,39 @@ void CyuvplayerDlg::OnDestroy()
 	// TODO: Add your message handler code here
 	delete customDlg;
 
-	if( y != NULL ) delete y;
-	if( u != NULL ) delete u;
-	if( v != NULL ) delete v;
+	if( fb.y != NULL ) delete fb.y;
+	if( fb.u != NULL ) delete fb.u;
+	if( fb.v != NULL ) delete fb.v;
 	
-	if( rgba != NULL ) delete rgba;
-	if( misc != NULL ) delete misc;
+	if( fb.rgba != NULL ) delete fb.rgba;
+	if( fb.misc != NULL ) delete fb.misc;
 
-	if( fd > -1 ) _close(fd);
+    if (fbSecondary.y != NULL) delete fbSecondary.y;
+    if (fbSecondary.u != NULL) delete fbSecondary.u;
+    if (fbSecondary.v != NULL) delete fbSecondary.v;
+
+    if (fbSecondary.rgba != NULL) delete fbSecondary.rgba;
+    if (fbSecondary.misc != NULL) delete fbSecondary.misc;
+
+    if (fd > -1)
+    {
+        _close(fd);
+        primaryFileSize = 0;
+    }
+
+    if (fdSecondary > -1)
+    {
+        _close(fdSecondary);
+        fdSecondary = -1;
+        isShowingDifference = false;
+        menu->CheckMenuItem(ID_VIEW_SHOWDIFFERENCE, MF_UNCHECKED);
+    }
 }
 
-void CyuvplayerDlg::FileOpen( wchar_t* path )
+bool CyuvplayerDlg::FileOpen( const wchar_t* path, int& fileDesc)
 {
 	int i, j;
-	wchar_t* file;
+	const wchar_t* file;
 	wchar_t* end;
 
 #ifdef SUPPORT_PCRE
@@ -1328,11 +1400,22 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 
 	StopTimer();
 	
-	if( fd > -1 )
-		_close(fd);
+    if (fileDesc > -1)
+    {
+        _close(fileDesc);
+        if (fileDesc == fd)
+        {
+            primaryFileSize = 0;
+        }
+    }
 
-	_wsopen_s( &fd, path, O_RDONLY|O_BINARY, _SH_DENYNO, 0);
-	UpdateFilename( path );
+	_wsopen_s( &fileDesc, path, O_RDONLY|O_BINARY, _SH_DENYNO, 0);
+    if (!fileDesc)
+    {
+        return false;
+    }
+
+    UpdateFilename(fileDesc==fd ? filename : filenameSecondary, path);
 
 	started = FALSE;
 	cur = 0;
@@ -1416,14 +1499,24 @@ void CyuvplayerDlg::FileOpen( wchar_t* path )
 
 	UpdateParameter();
 	LoadFrame();
+    return true;
 }
+
 void CyuvplayerDlg::OnDropFiles(HDROP hDropInfo)
 {
 	// TODO: Add your message handler code here and/or call defaultTCHAR szFileName[_MAX_PATH];
 	wchar_t szFileName[1024];
 
     ::DragQueryFile(hDropInfo, 0, szFileName, 1024);
-	FileOpen( szFileName );
+
+    if (fdSecondary>-1)
+    {
+        _close(fdSecondary);
+        fdSecondary = -1;
+        isShowingDifference = false;
+        menu->CheckMenuItem(ID_VIEW_SHOWDIFFERENCE, MF_UNCHECKED);
+    }
+    FileOpen( szFileName, fd);
 
 	CDialog::OnDropFiles(hDropInfo);
 }
@@ -1514,7 +1607,7 @@ void CyuvplayerDlg::OnCmenuSaveLuminance()
 	}
 	else {
 
-		_write( ofd, y, frame_size_y );
+		_write( ofd, fb.y, frame_size_y );
 		_close(ofd );
 
 	}
@@ -1574,18 +1667,18 @@ void CyuvplayerDlg::OnCmenuSaveYuv( color_format type )
 
 		}
 
-		_write( ofd, y, width*height );
+		_write( ofd, fb.y, width*height );
 		if( type == YUV444 ){
-			_write( ofd, u, width*height );
-			_write( ofd, v, width*height );
+			_write( ofd, fb.u, width*height );
+			_write( ofd, fb.v, width*height );
 		}
 		else if( type == YUV422 ){
-			_write( ofd, u, width*height/2 );
-			_write( ofd, v, width*height/2 );
+			_write( ofd, fb.u, width*height/2 );
+			_write( ofd, fb.v, width*height/2 );
 		}
 		else {
-			_write( ofd, u, width*height/4 );
-			_write( ofd, v, width*height/4 );
+			_write( ofd, fb.u, width*height/4 );
+			_write( ofd, fb.v, width*height/4 );
 		}
 		_close(ofd );
 
@@ -1607,7 +1700,7 @@ void CyuvplayerDlg::rgb2yuv444(){
 	unsigned char* pos;
 	unsigned char* line;
 	
-	line = rgba; idx = 0;
+	line = fb.rgba; idx = 0;
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i++ ){
@@ -1615,9 +1708,9 @@ void CyuvplayerDlg::rgb2yuv444(){
 			g = *pos; pos++;
 			b = *pos; pos+=2;
 
-			//y[idx] = ((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
-			u[idx] = (( -38 * r -  74 * g + 112 * b + 128) >> 8) + 128;
-			v[idx] = (( 112 * r -  94 * g -  18 * b + 128) >> 8) + 128;
+			//fb.y[idx] = ((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
+			fb.u[idx] = (( -38 * r -  74 * g + 112 * b + 128) >> 8) + 128;
+			fb.v[idx] = (( 112 * r -  94 * g -  18 * b + 128) >> 8) + 128;
 
 			idx++;
 		}
@@ -1637,7 +1730,7 @@ void CyuvplayerDlg::rgb2yuv422(){
 	unsigned char* line;
 	
 	/*
-	idx = 0; line = rgba;
+	idx = 0; line = fb.rgba;
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i++ ){
@@ -1645,14 +1738,14 @@ void CyuvplayerDlg::rgb2yuv422(){
 			g = *pos; pos++;
 			b = *pos; pos+=2;
 
-			y[idx] = ((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
+			fb.y[idx] = ((  66 * r + 129 * g +  25 * b + 128) >> 8) + 16;
 			idx++;
 		}
 		line += t_width*4;
 	}
 	*/
 
-	idx = 0; line = rgba;
+	idx = 0; line = fb.rgba;
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i+=2 ){
@@ -1671,8 +1764,8 @@ void CyuvplayerDlg::rgb2yuv422(){
 			sum[0] += (( -38 * r -  74 * g + 112 * b + 128) >> 8) + 128;
 			sum[1] += (( 112 * r -  94 * g -  18 * b + 128) >> 8) + 128;
 
-			u[idx] = sum[0]/2;
-			v[idx] = sum[1]/2;
+			fb.u[idx] = sum[0]/2;
+			fb.v[idx] = sum[1]/2;
 
 			idx++;
 
@@ -1692,7 +1785,7 @@ void CyuvplayerDlg::rgb2yuv420(){
 	unsigned char* pos;
 	unsigned char* line;
 	/*
-	idx = 0; line = rgba;
+	idx = 0; line = fb.rgba;
 	for( j = 0 ; j < height ; j++ ){
 		pos = line;
 		for( i = 0 ; i < width ; i++ ){
@@ -1700,14 +1793,14 @@ void CyuvplayerDlg::rgb2yuv420(){
 			g[0] = *pos; pos++;
 			b[0] = *pos; pos+=2;
 
-			y[idx] = ((  66 * r[0] + 129 * g[0] +  25 * b[0] + 128) >> 8) + 16;
+			fb.y[idx] = ((  66 * r[0] + 129 * g[0] +  25 * b[0] + 128) >> 8) + 16;
 			idx++;
 		}
 		line += t_width*4;
 	}
 	*/
 
-	idx = 0; line = rgba;
+	idx = 0; line = fb.rgba;
 	for( j = 0 ; j < height ; j+=2 ){
 		pos = line;
 		for( i = 0 ; i < width ; i+=2 ){
@@ -1732,8 +1825,8 @@ void CyuvplayerDlg::rgb2yuv420(){
 			sum[0] += (( -38 * r[1] -  74 * g[1] + 112 * b[1] + 128) >> 8) + 128;
 			sum[1] += (( 112 * r[1] -  94 * g[1] -  18 * b[1] + 128) >> 8) + 128;
 
-			u[idx] = sum[0]/4;
-			v[idx] = sum[1]/4;
+			fb.u[idx] = sum[0]/4;
+			fb.v[idx] = sum[1]/4;
 
 			idx++;
 		}
@@ -1809,9 +1902,9 @@ void CyuvplayerDlg::OnCmenuSaveRgb()
 		tmp = new unsigned char[width*height*4];
 		for( j = 0, k = height-1 ; j < height ; j++, k--){
 			for( i = 0 ; i < width ; i++ ){
-				tmp[(j*width+i)*4+2] = rgba[(k*t_width+i)*4];
-				tmp[(j*width+i)*4+1] = rgba[(k*t_width+i)*4+1];
-				tmp[(j*width+i)*4] = rgba[(k*t_width+i)*4+2];
+				tmp[(j*width+i)*4+2] = fb.rgba[(k*t_width+i)*4];
+				tmp[(j*width+i)*4+1] = fb.rgba[(k*t_width+i)*4+1];
+				tmp[(j*width+i)*4] = fb.rgba[(k*t_width+i)*4+2];
 			}
 		}
 
@@ -1830,7 +1923,7 @@ void CyuvplayerDlg::OnCmenuSaveRgb()
 	
 }
 
-void CyuvplayerDlg::UpdateFilename(wchar_t* path)
+void CyuvplayerDlg::UpdateFilename(wchar_t* fileName, const wchar_t* path)
 {
 	size_t len, start, end;
 
@@ -1838,8 +1931,8 @@ void CyuvplayerDlg::UpdateFilename(wchar_t* path)
 	for( start = len-1 ; start >= 0 && path[start] != '\\' ; start-- ); start++;
 	for( end = start+1 ; end < len && path[end] != '.' ; end++ );
 
-	wcsncpy( filename, path+start, end-start );
-	filename[end-start] = 0;
+	wcsncpy( fileName, path+start, end-start );
+	fileName[end-start] = 0;
 }
 
 void CyuvplayerDlg::DrawSegment(void)
@@ -1940,4 +2033,109 @@ void CyuvplayerDlg::DrawSegment(void)
 	}
 
 	OpenGLView->LoadSegmentTexture(segment);
+}
+
+
+void CyuvplayerDlg::OnViewShowdifference()
+{
+    isShowingDifference = !isShowingDifference;
+    menu->CheckMenuItem(ID_VIEW_SHOWDIFFERENCE, isShowingDifference ? MF_CHECKED : MF_UNCHECKED);
+    LoadFrame();
+}
+
+void CyuvplayerDlg::CalcDifIfNeeded()
+{
+    if (isShowingDifference)
+    {
+        if (m_color == RGB32 || m_color == AYUV)
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size_y * 4);
+        else if (m_color == Y210 || m_color == Y210MSB || m_color == Y216)
+        {
+            calcAbsDiff2((short*)fb.misc, (short*)fbSecondary.misc, frame_size_y * 2);
+            for (int i = 1; i < frame_size_y * 2; i += 2)
+            {
+                ((unsigned short*)fb.misc)[i] += (m_color == Y210 ? 1 << 9 : 1 << 15);
+            }
+        }
+        else if (m_color == Y410)
+            calcAbsDiff410(fb.misc, fbSecondary.misc, frame_size_y);
+        else if (m_color == RGB24 || m_color == RGBP)
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size_y * 3);
+
+        else if (m_color == RGB16)
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size_y * 2);
+
+        else if (m_color == UYVY)
+            calcAbsDiff(fb.misc, fbSecondary.misc,frame_size_y * 2);
+
+        else if (m_color == YUYV)
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size_y * 2);
+
+        else if (m_color == NV12 || m_color == NV21)
+        {
+            calcAbsDiff(fb.y, fbSecondary.y, frame_size_y);
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size_y / 2,128);
+        }
+        else if (m_color == P010 || m_color == P010MSB || m_color == P210 || m_color == P210MSB)
+        {
+            calcAbsDiff2((short*)fb.y, (short*)fbSecondary.y, frame_size_y/2);
+            calcAbsDiff2((short*)fb.misc, (short*)fbSecondary.misc, frame_size_uv/2, 128);
+        }
+        else if (m_color == PACKED_YUV444)
+            calcAbsDiff(fb.misc, fbSecondary.misc, frame_size);
+        else
+        {
+            calcAbsDiff(fb.y, fbSecondary.y, frame_size_y);
+            calcAbsDiff(fb.u, fbSecondary.u, frame_size_uv, 128);
+            calcAbsDiff(fb.v, fbSecondary.v, frame_size_uv, 128);
+        }
+
+    }
+}
+
+void CyuvplayerDlg::calcAbsDiff(unsigned char* buf1, unsigned char* buf2, int size, int offset)
+{
+    for (int i = 0; i < size; i++)
+    {
+        buf1[i] = abs(buf1[i] - buf2[i])+offset;
+    }
+}
+
+void CyuvplayerDlg::calcAbsDiff2(short* buf1, short* buf2, int size, int offset)
+{
+    for (int i = 0; i < size; i++)
+    {
+        buf1[i] = abs(buf1[i] - buf2[i])+ offset;
+    }
+}
+
+void CyuvplayerDlg::calcAbsDiff410(unsigned char*  buf1, unsigned char*  buf2, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        Y410Pack res;
+        res.A= abs( (int)((Y410Pack*)buf1)[i].A - (int)((Y410Pack*)buf2)[i].A);
+        res.Y = abs((int)((Y410Pack*)buf1)[i].Y - (int)((Y410Pack*)buf2)[i].Y);
+        res.U = abs((int)((Y410Pack*)buf1)[i].U - (int)((Y410Pack*)buf2)[i].U + 128);
+        res.V = abs((int)((Y410Pack*)buf1)[i].V - (int)((Y410Pack*)buf2)[i].V+128);
+        ((Y410Pack*)buf1)[i] = res;
+    }
+}
+
+void CyuvplayerDlg::ReallocateMem(FrameBuffer& frameBuf)
+{
+    if (frameBuf.y != NULL) delete frameBuf.y;
+    if (frameBuf.u != NULL) delete frameBuf.u;
+    if (frameBuf.v != NULL) delete frameBuf.v;
+
+    if (frameBuf.rgba != NULL) delete frameBuf.rgba;
+    if (frameBuf.misc != NULL) delete frameBuf.misc;
+
+    frameBuf.y = new unsigned char[width*height * 2];
+    frameBuf.u = new unsigned char[width*height * 2];
+    frameBuf.v = new unsigned char[width*height * 2];
+
+    frameBuf.rgba = new unsigned char[t_width*t_height * 4];
+    frameBuf.misc = new unsigned char[width*height * 4];
+
 }

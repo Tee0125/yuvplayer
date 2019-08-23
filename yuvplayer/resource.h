@@ -37,6 +37,9 @@
 #define ID_CMENU_SAVE_YUV420            32803
 #define ID_CMENU_SAVE_YUV444            32804
 #define ID_FILE_RELOAD                  32822
+#define ID_OPEN_SECONDARY               32839
+#define ID_VIEW                         32840
+#define ID_VIEW_SHOWDIFFERENCE          32841
 #define ID_COLOR_START                  40000
 #define ID_COLOR_YUV420_10LE            40000
 #define ID_COLOR_YUV420_10BE            40001
@@ -93,7 +96,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32839
+#define _APS_NEXT_COMMAND_VALUE         32842
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

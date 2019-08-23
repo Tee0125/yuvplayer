@@ -51,6 +51,17 @@
 enum color_format { YUV420_10BE, YUV420_10LE, YUV444, YUV422, YUV420, UYVY, YUYV, AYUV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16, RGBP, P010, P010MSB, P210, P210MSB, Y210, Y210MSB, Y216, Y410 };
 enum segment_type { SEGMENT16x16 = 1, SEGMENT32x32 = 2, SEGMENT64x64 = 4};
 
+struct FrameBuffer
+{
+    unsigned char* y;
+    unsigned char* u;
+    unsigned char* v;
+
+    unsigned char* rgba;
+    unsigned char* misc;
+};
+
+
 // CyuvplayerDlg dialog
 class CyuvplayerDlg : public CDialog
 {
@@ -79,8 +90,10 @@ protected:
 
 private:
 	wchar_t filename[MAX_PATH_LEN];
+    wchar_t filenameSecondary[MAX_PATH_LEN];
 
 	int fd; 
+    int fdSecondary;
 
 	int count;
 	int cur;
@@ -92,13 +105,10 @@ private:
 	int width, height;
 	int t_width, t_height;
 
-	unsigned char* y;
-	unsigned char* u;
-	unsigned char* v;
-	
-	unsigned char* rgba;
-	unsigned char* misc;
-	unsigned char* segment;
+    FrameBuffer fb;
+    FrameBuffer fbSecondary;
+
+    unsigned char* segment;
 
 	int segment_option;
 
@@ -120,6 +130,7 @@ private:
 	void Resize(int width, int height);
 	void UpdateParameter(void);
 	void LoadFrame(void);
+    void LoadFrame(int fileDesc, const FrameBuffer& frameBuf);
 	void yuv2rgb(void);
 	void fforward(void);
 	void rewind(void);
@@ -163,7 +174,18 @@ public:
 	afx_msg void OnCmenuSaveRgb();
 
 private:
-	void UpdateFilename(wchar_t* path);
-	void FileOpen( wchar_t* path );;
+	void UpdateFilename(wchar_t* fileName, const wchar_t* path);
+	bool FileOpen( const wchar_t* path, int& fileDesc);
 	void DrawSegment(void);
+    void CalcDifIfNeeded();
+    void calcAbsDiff(unsigned char * buf1, unsigned char * buf2, int size,int offset=128);
+    void calcAbsDiff2(short * buf1, short * buf2, int size, int offset = 128);
+    void calcAbsDiff410(unsigned char *  buf1, unsigned char *  buf2, int size);
+    void ReallocateMem(FrameBuffer & frameBuf);
+    ULONGLONG primaryFileSize;
+    bool isShowingDifference;
+
+public:
+    afx_msg void OnOpenSecondary();
+    afx_msg void OnViewShowdifference();
 };

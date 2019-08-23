@@ -175,7 +175,8 @@ IDR_MAIN_MENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open",                       ID_OPEN
+        MENUITEM "&Open...",                    ID_OPEN
+        MENUITEM "Open &Secondary...",          ID_OPEN_SECONDARY
         MENUITEM "&Reload",                     ID_FILE_RELOAD
         MENUITEM "&Go",                         ID_FILE_GO
         MENUITEM "E&xit",                       ID_FILE_EXIT
@@ -234,6 +235,10 @@ BEGIN
         MENUITEM "&1:1",                        ID_ZOOM_11, CHECKED
         MENUITEM "1:2",                         ID_ZOOM_12
         MENUITEM "1:4",                         ID_ZOOM_14
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Show &Difference",            ID_VIEW_SHOWDIFFERENCE
     END
     POPUP "Segment"
     BEGIN
