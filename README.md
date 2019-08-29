@@ -35,3 +35,4 @@ Hot key
 * "s" set size to 720p(SD)
 * "c" set size to CIF
 * "q" set size to QCIF
+* "v" set size to VGA
