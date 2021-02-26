@@ -46,6 +46,7 @@
 #ifdef SUPPORT_PCRE
 #	include "pcre.h"
 #endif
+#include <stdint.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -280,10 +281,12 @@ void CyuvplayerDlg::Resize(int width, int height)
 	if( misc != NULL ) delete misc;
 	
 	if( segment != NULL) delete segment;
-
-	y = new unsigned char[width*height*2];
-	u = new unsigned char[width*height*2];
-	v = new unsigned char[width*height*2];
+	int is16 = 1;
+	if (m_color == YUV422_16)
+		is16 = 2;
+	y = new unsigned char[width*height*2*is16];
+	u = new unsigned char[width*height*2*is16];
+	v = new unsigned char[width*height*2*is16];
 	
 	rgba    = new unsigned char[t_width*t_height*4];
 	segment = new unsigned char[t_width*t_height*4];
@@ -559,7 +562,11 @@ void CyuvplayerDlg::OnColor(UINT nID )
 			menu->CheckMenuItem(ID_COLOR_V210_10Bit, MF_CHECKED);
 			m_color = YUV422P10LE;
 			break;
-        
+		case ID_COLOR_YUV422_16Bit:
+			menu->CheckMenuItem(ID_COLOR_YUV422_16Bit, MF_CHECKED);
+			m_color = YUV422_16;
+			break;
+
 		case ID_COLOR_YUV444:
 			menu->CheckMenuItem( ID_COLOR_YUV444, MF_CHECKED);
 			m_color = YUV444;
@@ -649,7 +656,12 @@ void CyuvplayerDlg::UpdateParameter()
 		frame_size_uv = ((width+1)>>1) * ((height+1)>>1);
 	else 
 		frame_size_uv = 0;
-    
+
+	if (m_color == YUV422_16)
+	{
+		frame_size_y = width * height*2;
+		frame_size_uv = width * height ;
+	}
     if ( m_color == YUV420_10LE || m_color == YUV420_10BE)
     {
         frame_size_y  *= 2;
@@ -716,7 +728,6 @@ void CyuvplayerDlg::LoadFrame(void)
 		memset(misc, 0, frame_size);
 		_read(fd, misc, frame_size);
 	}
-
     else if ( m_color == PACKED_YUV444 )
         _read( fd, misc, frame_size );
 
@@ -782,7 +793,7 @@ void CyuvplayerDlg::yuv2rgb(void)
 	}
 	else if( m_color == YUV422 ){
 		stride_uv = (width+1)>>1;
-
+		
 		for( j = 0 ; j < height ; j++ ){
 			cur = line;
 			for( i = 0 ; i < width ; i++ ){
@@ -795,6 +806,27 @@ void CyuvplayerDlg::yuv2rgb(void)
 				(*cur) = clip(( 298 * c + 516 * d           + 128) >> 8);cur+=2;
 			}
 			line += t_width<<2;
+		}
+	}
+	else if (m_color == YUV422_16) {
+		stride_uv = width/2;// (width + 1) >> 1;
+		uint16_t *y16 = (uint16_t*)y;
+		uint16_t *u16 = (uint16_t*)u;
+		uint16_t *v16 = (uint16_t*)v;
+
+		for (j = 0; j < height; j++) {
+			cur = line;
+			for (i = 0; i < width; i++) {
+				c = (((y16[j * width + i]            )>>2) &0xFF   )-16;
+				d = (((u16[j * stride_uv + (i >> 1)] )>> 2) & 0xFF )- 128;
+				e = (((v16[j * stride_uv + (i >> 1)] )>> 2) & 0xFF )- 128;
+
+				
+				(*cur) = clip((298 * c + 409 * e + 128) >> 8); cur++;
+				(*cur) = clip((298 * c - 100 * d - 208 * e + 128) >> 8); cur++;
+				(*cur) = clip((298 * c + 516 * d + 128) >> 8); cur += 2;
+			}
+			line += t_width << 2;
 		}
 	}
 

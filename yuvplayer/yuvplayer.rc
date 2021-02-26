@@ -203,6 +203,7 @@ BEGIN
         MENUITEM "YUV420 10bitLE",              ID_COLOR_YUV420_10LE
         MENUITEM "YUV420 10bitBE",              ID_COLOR_YUV420_10BE
         MENUITEM "YUV422p10bitLE(V210)",        ID_COLOR_V210_10Bit
+        MENUITEM "YUV422 16bit",                ID_COLOR_YUV422_16Bit
         MENUITEM SEPARATOR
         MENUITEM "YUV&444",                     ID_COLOR_YUV444
         MENUITEM "YUV4&22",                     ID_COLOR_YUV422
