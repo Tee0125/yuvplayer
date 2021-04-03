@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,42 +28,56 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// yuvplayerDlg.h : header file
-//
+ // yuvplayerDlg.h : header file
+ //
 
 #pragma once
 #include "afxcmn.h"
 #include "afxwin.h"
-
 #include "SizeDialog.h"
 #include "OpenGLView.h"
-
-#include <io.h> 
 #include <fcntl.h>
-#include <sys/stat.h>
 
-#define DEFAULT_WIDTH 352
-#define DEFAULT_HEIGHT 288
+#define DEFAULT_WIDTH 960
+#define DEFAULT_HEIGHT 540
 
 #define MARGIN 2
 #define MAX_PATH_LEN 1024
 
-enum color_format { YUV420_10BE, YUV420_10LE, YUV422P10LE,YUV422_16, YUV444, YUV422, YUV420, UYVY, YUYV, YYY, PACKED_YUV444, NV12, NV21, RGB32, RGB24, RGB16 };
-enum segment_type { SEGMENT16x16 = 1, SEGMENT32x32 = 2, SEGMENT64x64 = 4};
+enum class color_format
+{
+	YUV420_10BE,
+	YUV420_10LE,
+	YUV422P_10LE,
+	YUV422_16,
+	YUV444,
+	YUV422,
+	YUV420,
+	UYVY,
+	YUYV,
+	YYY,
+	PACKED_YUV444,
+	NV12,
+	NV21,
+	RGB32,
+	RGB24,
+	RGB16
+};
+
+enum segment_type { SEGMENT16x16 = 1, SEGMENT32x32 = 2, SEGMENT64x64 = 4 };
 
 // CyuvplayerDlg dialog
 class CyuvplayerDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
 	CyuvplayerDlg(CWnd* pParent = NULL);	// standard constructor
 
 // Dialog Data
 	enum { IDD = IDD_YUVPLAYER_DIALOG };
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-
 
 // Implementation
 protected:
@@ -78,7 +92,7 @@ protected:
 private:
 	wchar_t* filename;
 
-	int fd; 
+	int fd;
 
 	int count;
 	int cur;
@@ -93,7 +107,7 @@ private:
 	unsigned char* y;
 	unsigned char* u;
 	unsigned char* v;
-	
+
 	unsigned char* rgba;
 	unsigned char* misc;
 	unsigned char* segment;
@@ -103,7 +117,7 @@ private:
 	float ratio;
 
 	color_format m_color;
-	
+
 	CBitmapButton m_open_btn;
 	CBitmapButton m_rewind_btn;
 	CBitmapButton m_play_btn;
@@ -126,7 +140,7 @@ private:
 	void rgb2yuv444();
 	void rgb2yuv422(bool needY);
 	void rgb2yuv420();
-	void OnCmenuSaveYuv( color_format type );
+	void OnCmenuSaveYuv(color_format type);
 
 	COpenGLView* OpenGLView;
 
@@ -136,10 +150,10 @@ private:
 public:
 	afx_msg void OnOpen();
 	afx_msg void OnFileReload();
-	afx_msg void OnSizeChange(UINT nID );
+	afx_msg void OnSizeChange(UINT nID);
 	afx_msg void OnColor(UINT nID);
 	afx_msg void OnZoom(UINT nID);
-	afx_msg void OnSegment(UINT nID );
+	afx_msg void OnSegment(UINT nID);
 
 	afx_msg void OnBnClickedRewind();
 	afx_msg void OnBnClickedPlay();
@@ -162,6 +176,6 @@ public:
 
 private:
 	void UpdateFilename(wchar_t* path);
-	void FileOpen( wchar_t* path );;
+	void FileOpen(wchar_t* path);;
 	void DrawSegment(void);
 };

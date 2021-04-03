@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010, Tae-young Jung
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -15,7 +15,7 @@
  * 4. Neither the name of the <organization> nor the
  *    names of its contributors may be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,8 +30,7 @@
 
 #pragma once
 
-
-// COpenGLView view
+ // COpenGLView view
 
 class COpenGLView : public CView
 {
@@ -39,10 +38,10 @@ class COpenGLView : public CView
 
 public:
 	COpenGLView();           // protected constructor used by dynamic creation
-	virtual ~COpenGLView();
+	~COpenGLView() override;
 
 public:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+	void OnDraw(CDC* pDC) override;      // overridden to draw this view
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 #ifndef _WIN32_WCE
@@ -51,17 +50,12 @@ public:
 #endif
 
 protected:
-	CDC* m_pDC; 
-
-	unsigned char* im;
-	int width;
-	int height;
 
 	/* texture width & height */
-	int t_width; 
+	int t_width;
 	int t_height;
-	
-	BOOL loaded[2];	
+
+	BOOL loaded[2];
 	unsigned int texture[2];
 
 	float ratio;
@@ -70,15 +64,12 @@ protected:
 	HGLRC m_hRC;
 
 public:
-	afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs);
+	afx_msg BOOL PreCreateWindow(CREATESTRUCT& cs) override;
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnDestroy();
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	void SetParam(int width, int height, float ratio);
-	void ChangeRatio(float ratio);
 	void LoadTexture(unsigned char* rgba);
 	void LoadSegmentTexture(unsigned char* segment);
 };
-
-
