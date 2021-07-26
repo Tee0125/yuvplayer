@@ -416,6 +416,10 @@ void CyuvplayerDlg::OnSizeChange(UINT nID )
 			menu->CheckMenuItem(ID_SIZE_960X540, MF_CHECKED);
 			Resize(960,540);
 			return;
+		case ID_SIZE_4K:
+			menu->CheckMenuItem(ID_SIZE_4K, MF_CHECKED);
+			Resize(3840, 2160);
+			return;
 
 	}
 

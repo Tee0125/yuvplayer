@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ 生成的包含文件。
-// 供 yuvplayer.rc 使用
+// Microsoft Visual C++ generated include file.
+// Used by yuvplayer.rc
 //
 #define IDD_YUVPLAYER_DIALOG            102
 #define IDR_MENU1                       130
@@ -68,6 +68,7 @@
 #define ID_SIZE_CUSTOM                  40028
 #define ID_SIZE_960X540                 40029
 #define ID_SIZE_480X270                 40030
+#define ID_SIZE_4K                      40031
 #define ID_SIZE_END                     40039
 #define ID_ZOOM_START                   40040
 #define ID_ZOOM_41                      40040
@@ -88,7 +89,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32838
+#define _APS_NEXT_COMMAND_VALUE         32839
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

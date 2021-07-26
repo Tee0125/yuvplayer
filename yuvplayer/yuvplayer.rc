@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// º«Óï(º«¹ú) resources
+// Korean (Korea) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -182,6 +182,7 @@ BEGIN
     END
     POPUP "&Size"
     BEGIN
+        MENUITEM "4k(3840x2160)",               ID_SIZE_4K
         MENUITEM "1080P (1920x1080)",           ID_SIZE_HD
         MENUITEM "720P  (1280x720)",            ID_SIZE_SD
         MENUITEM "&VGA   (640x480)",            ID_SIZE_VGA
@@ -290,7 +291,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
 
-#endif    // º«Óï(º«¹ú) resources
+#endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
