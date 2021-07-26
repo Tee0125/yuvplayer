@@ -207,45 +207,6 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
-# LightSwitch generated files
-GeneratedArtifacts/
-_Pvt_Extensions/
-ModelManifest.xml
-frameToTCP.VC.opendb
-frameToTCP.VC.VC.opendb
-frameToTCP.VC.db
-sh.exe.stackdump
-perl.exe.stackdump
-setup/Output/
-/Test/Test_EncoderCUDA/clips/
-frameToTCP.marker.tss
-frameToTCP.tss
-/Tools/AudioExporter/AudioExported-16-14-23.wav
 *.wav
-/Doc/licensemanagement.txt
-/Doc/Vibox backend watch dog command.copy.docx
-/Lib.SecureStorage/gestDisk - Copy.h
-/Lib.SecureStorage/gestDisk - Copy.cpp
-/Lib.SecureStorage/gestDisk.h.testcode
-/Lib.SecureStorage/gestDisk.cpp.testcode
-/Test/AudioMonitor/AudioMonitor - Copy.cpp
-/Test/AudioMonitor - Copy.zip
-/Test/AudioMonitor - Copy/targetver.h
-/Test/AudioMonitor - Copy/stdafx.h
-/Test/AudioMonitor - Copy/stdafx.cpp
-/Test/AudioMonitor - Copy/ReadMe.txt
-/Test/AudioMonitor - Copy/AudioPlayer.h
-/Test/AudioMonitor - Copy/AudioMonitor.vcxproj.filters
-/Test/AudioMonitor - Copy/AudioMonitor.vcxproj
-/Test/AudioMonitor - Copy/AudioMonitor.cpp
-/Lib.Audio/New folder/AudioMatrix.h
-/Lib.Audio/New folder/AudioMatrix.cpp
-/Lib.Core/New folder/playoutBuilder.h
-/Lib.Core/New folder/playoutBuilder.cpp
-/FrameProvider/Lib.FrameProviderBlackmagic/DeckLinkAPI_h.h
-/FrameConsumer/Lib.FrameConsumerBlackMagic/DeckLinkAPI_h.h
 *.db
-/Lib.Audio/AudioMatrix - Copy.cpp
-/tem/secureStorage.cpp
-/tem/secureStorage.h
-/Lib.Core/frameCache - Copy.cpp
+
