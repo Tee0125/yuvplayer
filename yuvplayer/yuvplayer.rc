@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 한국어(대한민국) resources
+// Korean (Korea) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -182,6 +182,7 @@ BEGIN
     END
     POPUP "&Size"
     BEGIN
+        MENUITEM "4k(3840x2160)",               ID_SIZE_4K
         MENUITEM "1080P (1920x1080)",           ID_SIZE_HD
         MENUITEM "720P  (1280x720)",            ID_SIZE_SD
         MENUITEM "&VGA   (640x480)",            ID_SIZE_VGA
@@ -193,12 +194,17 @@ BEGIN
         MENUITEM "&QCIF    (176x144)",          ID_SIZE_QCIF
         MENUITEM "SMALL (192x256)",             ID_SIZE_192X256
         MENUITEM SEPARATOR
+        MENUITEM "960x540",                     ID_SIZE_960X540
+        MENUITEM "480x270",                     ID_SIZE_480X270
+        MENUITEM SEPARATOR
         MENUITEM "C&ustom",                     ID_SIZE_CUSTOM
     END
     POPUP "&Color"
     BEGIN
         MENUITEM "YUV420 10bitLE",              ID_COLOR_YUV420_10LE
         MENUITEM "YUV420 10bitBE",              ID_COLOR_YUV420_10BE
+        MENUITEM "YUV422p10bitLE(V210)",        ID_COLOR_V210_10Bit
+        MENUITEM "YUV422 16bit",                ID_COLOR_YUV422_16Bit
         MENUITEM SEPARATOR
         MENUITEM "YUV&444",                     ID_COLOR_YUV444
         MENUITEM "YUV4&22",                     ID_COLOR_YUV422
@@ -222,6 +228,7 @@ BEGIN
         MENUITEM "&1:1",                        ID_ZOOM_11, CHECKED
         MENUITEM "1:2",                         ID_ZOOM_12
         MENUITEM "1:4",                         ID_ZOOM_14
+        MENUITEM "custom",                      ID_ZOOM_CUSTOM
     END
     POPUP "Segment"
     BEGIN
@@ -284,7 +291,7 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\wi0111-48.ico"
 
-#endif    // 한국어(대한민국) resources
+#endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

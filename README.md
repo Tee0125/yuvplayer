@@ -1,22 +1,24 @@
-# yuvplayer
+# yuvplayer 2.0
 
 Lightweight YUV player which supports various YUV format
 
 Supporting Format
 * Planar format
-* YUV420 (YV12)
-* YUV422 (YV16)
-* YUV444
+* 8bit YUV420 (YV12)
+* 8bit YUV422 (YV16)
+* 10bit YUV422
+* 8bit YUV444
 * RGB16
 * RGB24
 * RGB32
 
 
 * Interleaved format
-* NV12
-* NV21
-* UYVY
-* VYUY
+* 8bit NV12
+* 8bit NV21
+* 8bit UYVY
+* 10bit UYVY(V210)
+* 8bit VYUY
 
 Supporting Feature
 * Zoom (4:1 ~ 1:4)

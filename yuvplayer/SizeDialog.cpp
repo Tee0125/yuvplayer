@@ -56,9 +56,9 @@ void CSizeDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_WIDTH, width);
-	DDV_MinMaxUInt(pDX, width, 1, 4096);
+	DDV_MinMaxUInt(pDX, width, 1, 7680);
 	DDX_Text(pDX, IDC_HEIGHT, height);
-	DDV_MinMaxUInt(pDX, height, 1, 4096);
+	DDV_MinMaxUInt(pDX, height, 1, 4320);
 }
 
 
